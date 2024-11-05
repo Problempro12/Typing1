@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Game</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="words.js"></script> <!-- Подключаем words.js -->
+</head>
+<body>
+    <div class="typing-game">
+        <header>
+            <h1>Тренажер по скорости печати</h1>
+        </header>
+
+        <!-- Элементы управления -->
+        <div class="controls">
+            <label for="text-length">Длина текста:</label>
+            <select id="text-length">
+                <option value="50">50 символов</option>
+                <option value="100">100 символов</option>
+                <option value="150">150 символов</option>
+                <option value="200">200 символов</option>
+            </select>
+            <button id="generate-btn">Сгенерировать текст</button>
+        </div>
+        
+        <!-- Игровая зона -->
+        <section class="game-area">
+            <div id="text-to-type">
+                <p>Здесь будет текст для набора</p>
+            </div>
+            <textarea id="user-input" placeholder="Начните печатать здесь..."></textarea>
+        </section>
+        
+        <!-- Статистика -->
+        <div class="stats">
+            <p>Скорость: <span id="wpm">0</span> CPM</p>
+            <p>Точность: <span id="accuracy">100</span>%</p>
+            <button id="start-btn">Начать</button>
+        </div>
+        
+        <!-- Контейнер для предыдущих результатов -->
+        <div class="results-container">
+            <p id="prev-results" class="prev-results"></p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
+    <script src="script.js"></script> <!-- Основной скрипт -->
+</body>
+</html>

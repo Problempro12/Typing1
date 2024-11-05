@@ -1,0 +1,111 @@
+/* Основные стили */
+body {
+    font-family: 'Roboto Mono', monospace;
+    background-color: #2d2d2d;
+    color: #f5f5f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.typing-game {
+    width: 90%;
+    max-width: 600px;
+    background-color: #1e1e1e;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+header h1 {
+    font-size: 1.5em;
+    color: #4caf50;
+    margin: 0 0 15px;
+}
+
+#text-to-type {
+    font-size: 1.2em;
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #333;
+    border-radius: 5px;
+    overflow-wrap: break-word; /* Перенос длинных слов */
+    word-wrap: break-word; /* Поддержка старых браузеров */
+    overflow: hidden;
+    max-height: 120px; /* Ограничиваем высоту */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 5; /* Ограничиваем текст по строкам */
+}
+
+
+#user-input {
+    width: 100%;
+    height: 100px;
+    font-size: 1.2em;
+    padding: 10px;
+    border: 2px solid #4caf50;
+    border-radius: 4px;
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+.stats {
+    margin-top: 15px;
+}
+
+#start-btn {
+    background-color: #4caf50;
+    border: none;
+    padding: 10px 20px;
+    color: #fff;
+    font-size: 1em;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.3s;
+}
+
+#start-btn:hover {
+    background-color: #45a049;
+}
+
+.controls {
+    margin-bottom: 15px;
+}
+
+.controls label,
+.controls select,
+.controls button {
+    font-size: 1em;
+    margin: 0 5px;
+}
+
+#generate-btn {
+    background-color: #4caf50;
+    border: none;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#generate-btn:hover {
+    background-color: #45a049;
+}
+
+.results-container {
+    position: relative;
+    overflow: hidden;
+    min-height: 40px; /* Минимальная высота для результатов */
+    color: #f5f5f5;
+}
+
+.prev-results {
+    opacity: 1;
+    transition: color 0.3s ease;
+    color: #ddd; /* Исходный светлый цвет текста */
+}
+
