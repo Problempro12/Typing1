@@ -11,7 +11,7 @@ let isTestStarted = false; // Добавляем флаг для автоста�
 
 // Функция для начала теста
 function startTypingTest() {
-    userInput.value = '';          // Очищаем поле ввода
+    // userInput.value = ''; // Уберите эту строку, чтобы не очищать поле ввода
     wpmDisplay.textContent = '0';   // Обнуляем WPM
     accuracyDisplay.textContent = '100'; // Обнуляем точность
 
@@ -85,25 +85,29 @@ function endTypingTest() {
 
 // Проверка завершения теста
 userInput.addEventListener('input', () => {
-    if (!isTestStarted) { // Автозапуск при первом вводе текста
+    const inputText = userInput.value;
+    const originalText = textToTypeElement.innerText;
+
+    // Автозапуск при первом вводе текста
+    if (!isTestStarted) {
         isTestStarted = true;
         startTypingTest();
     }
 
-    const inputText = userInput.value;
-    const originalText = textToTypeElement.innerText;
     const resultHTML = [];
 
-    // Проверяем каждый символ
+    // Проверяем каждый символ оригинального текста
     for (let i = 0; i < originalText.length; i++) {
         if (i < inputText.length) {
+            // Если символ введен, проверяем его
             if (inputText[i] === originalText[i]) {
-                resultHTML.push(`<span class="correct">${inputText[i]}</span>`); // Правильный символ
+                resultHTML.push(`<span class="correct">${originalText[i]}</span>`); // Правильный символ
             } else {
-                resultHTML.push(`<span class="incorrect">${inputText[i]}</span>`); // Неправильный символ
+                resultHTML.push(`<span class="incorrect">${originalText[i]}</span>`); // Неправильный символ
             }
         } else {
-            resultHTML.push(`<span class="gray">${originalText[i]}</span>`); // Остальные символы остаются серыми
+            // Если символ не введен, показываем оригинальный символ серым
+            resultHTML.push(`<span class="gray">${originalText[i]}</span>`); 
         }
     }
 
