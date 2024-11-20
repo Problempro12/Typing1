@@ -28,6 +28,7 @@ function updateStats() {
     const charsTyped = userInput.value.length;
     const cpm = Math.round(charsTyped / timeElapsed);
 
+    // Измените здесь, чтобы передавать только введенный текст
     const accuracy = calculateAccuracy(userInput.value, textToTypeElement.innerText);
 
     wpmDisplay.textContent = cpm; // Отображаем CPM
@@ -40,13 +41,15 @@ function calculateAccuracy(inputText, originalText) {
     const inputChars = inputText.split('');
     const originalChars = originalText.split('');
 
+    // Сравниваем только введенные символы с оригинальными
     for (let i = 0; i < inputChars.length; i++) {
         if (inputChars[i] === originalChars[i]) {
             correctChars++;
         }
     }
-    
-    return Math.round((correctChars / originalChars.length) * 100);
+
+    // Учитываем только те символы, которые были введены
+    return Math.round((correctChars / inputChars.length) * 100) || 0; // Избегаем деления на ноль
 }
 
 // Генерация текста из осмысленных слов
@@ -87,9 +90,33 @@ userInput.addEventListener('input', () => {
         startTypingTest();
     }
 
-    if (userInput.value.length >= textToTypeElement.innerText.length) {
-        endTypingTest();
+    const inputText = userInput.value;
+    const originalText = textToTypeElement.innerText;
+    const resultHTML = [];
+
+    // Проверяем каждый символ
+    for (let i = 0; i < originalText.length; i++) {
+        if (i < inputText.length) {
+            if (inputText[i] === originalText[i]) {
+                resultHTML.push(`<span class="correct">${inputText[i]}</span>`); // Правильный символ
+            } else {
+                resultHTML.push(`<span class="incorrect">${inputText[i]}</span>`); // Неправильный символ
+            }
+        } else {
+            resultHTML.push(`<span class="gray">${originalText[i]}</span>`); // Остальные символы остаются серыми
+        }
     }
+
+    // Обновляем отображение текста
+    textToTypeElement.innerHTML = resultHTML.join('');
+
+    // Проверка на завершение ввода
+    if (inputText.length >= originalText.length) {
+        setTimeout(endTypingTest, 200); // Задержка перед завершением теста
+    }
+
+    // Обновляем статистику
+    updateStats();
 });
 
 // Привязываем обработчики
@@ -128,3 +155,16 @@ function endTypingTest() {
 
     alert(`Тест завершен!\nСкорость: ${finalCpm} CPM\nТочность: ${finalAccuracy}%`);
 }
+
+// Функция для сброса теста
+function resetTypingTest() {
+    userInput.value = ''; // Очищаем поле ввода
+    textToTypeElement.innerText = 'Здесь будет текст для набора'; // Восстанавливаем текст по умолчанию
+    wpmDisplay.textContent = '0'; // Обнуляем WPM
+    accuracyDisplay.textContent = '100'; // Обнуляем точность
+    clearInterval(interval); // Очищаем интервал
+    isTestStarted = false; // Сбрасываем флаг теста
+}
+
+// Привязываем обработчик к кнопке сброса
+document.getElementById('reset-btn').addEventListener('click', resetTypingTest);
