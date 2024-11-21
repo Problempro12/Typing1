@@ -172,3 +172,45 @@ function resetTypingTest() {
 
 // Привязываем обработчик к кнопке сброса
 document.getElementById('reset-btn').addEventListener('click', resetTypingTest);
+
+const level1Button = document.getElementById('level1');
+const level2Button = document.getElementById('level2');
+const level1Content = document.getElementById('level1-content');
+const level2Content = document.getElementById('level2-content');
+
+// Функция для переключения вкладок
+function switchTab(activeTab, inactiveTab, activeButton, inactiveButton) {
+    activeTab.classList.add('active');
+    inactiveTab.classList.remove('active');
+    activeButton.classList.add('active');
+    inactiveButton.classList.remove('active');
+}
+
+// Обработчики событий для кнопок
+level1Button.addEventListener('click', () => {
+    switchTab(level1Content, level2Content, level1Button, level2Button);
+});
+
+level2Button.addEventListener('click', () => {
+    switchTab(level2Content, level1Content, level2Button, level1Button);
+});
+
+const sentences = [
+    "Это первое предложение.",
+    "Как дела? Надеюсь, у вас всё хорошо!",
+    "Сегодня прекрасная погода, не правда ли?",
+    "Вам нужно учиться, чтобы добиться успеха.",
+    "Какой ваш любимый фильм? Я люблю комедии!"
+];
+
+function getRandomSentence() {
+    return sentences[Math.floor(Math.random() * sentences.length)];
+}
+
+function setRandomTextLevel2() {
+    const randomSentence = getRandomSentence();
+    document.getElementById('text-to-type-level2').innerText = randomSentence; // Устанавливаем текст для уровня 2
+}
+
+// Привязываем обработчик к кнопке генерации текста для уровня 2
+document.getElementById('start-btn-level2').addEventListener('click', setRandomTextLevel2);

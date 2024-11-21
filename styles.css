@@ -42,7 +42,9 @@ header h1 {
 }
 
 .correct {
-    color: white; /* Цвет для правильных символов */
+    color: rgb(255, 255, 255); /* Цвет для правильных символов */
+    background: rgb(43, 104, 74);
+    border-radius: 10px;
 }
 
 .incorrect {
@@ -137,5 +139,17 @@ select {
     opacity: 1;
     transition: color 0.3s ease;
     color: #ddd; /* Исходный светлый цвет текста */
+}
+
+.tab-content {
+    display: none; /* Скрываем все вкладки по умолчанию */
+}
+
+.tab-content.active {
+    display: block; /* Показываем только активную вкладку */
+}
+
+.tab-button.active {
+    font-weight: bold; /* Выделяем активную кнопку */
 }
 
