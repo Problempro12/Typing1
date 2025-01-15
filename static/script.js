@@ -1,18 +1,43 @@
+// Запрет F12, выделения и копирования
+document.addEventListener("keydown", function (event) {
+    if (
+      event.key === "F12" ||
+      (event.ctrlKey && event.shiftKey && event.key === "I")
+    ) {
+      event.preventDefault();
+      document.getElementById("devtools-banner").style.display = "block";
+    }
+  });
+
+  document.addEventListener("contextmenu", (event) =>
+    event.preventDefault()
+  );
+  document.addEventListener("selectstart", (event) =>
+    event.preventDefault()
+  );
+  document.addEventListener("dragstart", (event) => event.preventDefault());
+
 // Находим элементы
 const textToTypeElement = document.getElementById('text-to-type');
 const userInput = document.getElementById('user-input');
 const wpmDisplay = document.getElementById('wpm');
 const accuracyDisplay = document.getElementById('accuracy');
 const startButton = document.getElementById('start-btn');
+const accuracySpan = document.getElementById('accuracy'); // Инициализация accuracySpan
+const wpmSpan = document.getElementById('wpm');
+
 
 // Переменные для отслеживания состояния
 let startTime, interval;
 let isTestStarted = false;
+let originalText = "";
 
 // Функция для начала теста
 function startTypingTest() {
     wpmDisplay.textContent = '0';
     accuracyDisplay.textContent = '100';
+    originalText = generateText(parseInt(document.getElementById('text-length').value));
+    textToTypeElement.innerText = originalText; // Устанавливаем текст для набора
 
     startTime = new Date();
     clearInterval(interval);
@@ -21,16 +46,49 @@ function startTypingTest() {
 
 // Функция для обновления статистики
 function updateStats() {
-    const timeElapsed = (new Date() - startTime) / 60000; // время в минутах
-    const charsTyped = userInput.value.length;
-    const cpm = Math.round(charsTyped / timeElapsed);
+    const typedText = userInput.value;
+    const totalTyped = typedText.length;
 
-    // Измените здесь, чтобы передавать только введенный текст
-    const accuracy = calculateAccuracy(userInput.value, textToTypeElement.innerText);
+    // Проверяем, что тест уже начался
+    if (!startTime) {
+        return; // Если тест не начался, ничего не делаем
+    }
 
-    wpmDisplay.textContent = cpm; // Отображаем CPM
-    accuracyDisplay.textContent = accuracy;
+    const elapsedTime = (new Date() - startTime) / 60000; // в минутах
+
+    // Проверяем, что elapsedTime больше 0, чтобы избежать деления на ноль
+    if (elapsedTime > 0) {
+        const wpm = Math.round(totalTyped / elapsedTime);
+        wpmSpan.textContent = wpm;
+    } else {
+        wpmSpan.textContent = '0'; // Если время не прошло, показываем 0
+    }
+
+    let correctChars = 0;
+    for (let i = 0; i < totalTyped; i++) {
+        if (typedText[i] === originalText[i]) {
+            correctChars++;
+        }
+    }
+    const accuracy = Math.round((correctChars / totalTyped) * 100) || 0;
+    accuracyDisplay.textContent = accuracy; // Используем accuracyDisplay
+
+    // Проверка на завершение теста
+    if (typedText.length === originalText.length) {
+        endGame(); // Завершение теста, если длина совпадает
+    }
 }
+
+// Обработчик событий для поля ввода
+userInput.addEventListener('input', function() {
+    const typedText = userInput.value;
+
+    // Ваша существующая логика обновления статистики
+    updateStats();
+});
+
+// Привязываем обработчики
+startButton.addEventListener('click', startTypingTest);
 
 // Функция для расчета точности
 function calculateAccuracy(inputText, originalText) {
@@ -77,7 +135,13 @@ function endTypingTest() {
     const finalCpm = wpmDisplay.textContent;
     const finalAccuracy = accuracyDisplay.textContent;
 
-    alert(`Тест завершен!\nСкорость: ${finalCpm} CPM\nТочность: ${finalAccuracy}%`);
+    // Проверка, что элемент существует
+    if (prevResultsElement) {
+        prevResultsElement.textContent = `Тест завершен! Скорость: ${finalCpm} CPM, Точность: ${finalAccuracy}%`;
+    }
+
+    // Дополнительно можно сбросить поле ввода и другие элементы, если это необходимо
+    resetTypingTest(); // Вызываем функцию сброса, если нужно
 }
 
 // Проверка завершения теста
@@ -149,8 +213,6 @@ function endTypingTest() {
             gsap.to(prevResultsElement, { opacity: 1, duration: 0.5 }); // Возвращаем на место с новым результатом
         }
     });
-
-    alert(`Тест завершен!\nСкорость: ${finalCpm} CPM\nТочность: ${finalAccuracy}%`);
 }
 
 // Функция для сброса теста

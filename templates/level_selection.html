@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выбор уровня сложности</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="level-container">
+        <header>
+            <h1 class="level-title">Выбор уровня сложности</h1>
+            <p class="level-description">Выберите уровень сложности для тренировки скорости печати:</p>
+        </header>
+        
+        <div class="level-options">
+            <button class="level-option-btn" onclick="startTypingTest('beginner')">Начальный</button>
+            <button class="level-option-btn" onclick="window.location.href='/intermediate'">Обычный</button>
+            <button class="level-option-btn" onclick="startTypingTest('advanced')">Продвинутый</button>
+            <button class="level-option-btn" onclick="startTypingTest('expert')">Эксперт</button>
+        </div>
+
+        <a href="{{ url_for('about') }}" class="level-about-btn">О нас</a>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
