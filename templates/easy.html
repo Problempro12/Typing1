@@ -4,13 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Тренажёр скорости печати</title>
-    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" /> -->
-    <script src="{{ url_for('static', filename='words.js') }}"></script>
-    <!-- Подключаем words.js -->
-    <link
-    rel="stylesheet"
-    href="/static/public.css"
-  />
+    <script src="{{ url_for('static', filename='words-easy.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='public.css') }}" />
   </head>
   <body>
     <div id="devtools-banner">
@@ -25,13 +20,10 @@
         display: block;
         justify-content: center;
         align-items: center;
-
         margin-left: auto;
         margin-right: auto;
       }
 
-    
-      /* Стиль для баннера */
       #devtools-banner {
           display: none;
           position: fixed;
@@ -46,59 +38,53 @@
           line-height: 100vh;
           z-index: 9999;
       }
-.hidden {
-    display: none;
-  }
-  .highlight {
-    background-color: rgba(33, 128, 33, 0.377);
-  }
+      .hidden {
+          display: none;
+      }
+      .highlight {
+          background-color: rgba(33, 128, 33, 0.377);
+      }
+      .typing-game {
+          display: block;
+          margin-top: 300px;
+          width: 90%;
+          max-width: 900px;
+          background-color: #1e1e1e;
+          padding: 20px;
+          border-radius: 8px;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      }
+      .correct {
+          color: green;
+      }
+      .incorrect {
+          color: red;
+      }
+      #user-input {
+          height: 0px;
+          width: 0px;
+          border: none;
+          overflow: hidden;
+          resize: none;
+          position: fixed;
+          bottom: 0;
+          right: -100px;
+      }
+      #text-to-type {
+          font-size: 1.2em;
+          margin-bottom: 20px;
+          padding: 15px;
+          background-color: #333;
+          border-radius: 10px;
+          overflow-wrap: break-word;
+          word-wrap: break-word;
+          overflow-y: auto;
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          color: rgb(207, 207, 207);
+      }
 
-
-  .typing-game {
-    display: block;
-    margin-top: 300px;
-    width: 90%;
-    max-width: 900px;
-    background-color: #1e1e1e;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  }
-
-  .correct {
-    color: green;
-  }
-
-  .incorrect {
-    color: red;
-  }
-  #user-input {
-    height: 0px;
-    width: 0px;
-    border: none;
-    overflow: hidden;
-    resize: none;
-    position: fixed;
-    bottom: 0;
-    right: -100px;
-  }
-#text-to-type {
-    font-size: 1.2em;
-    margin-bottom: 20px;
-    padding: 15px;
-    background-color: #333;
-    border-radius: 10px;
-    overflow-wrap: break-word; /* Перенос длинных слов */
-    word-wrap: break-word; /* Поддержка старых браузеров */
-    overflow-y: auto;
-    
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-
-    color: rgb(207, 207, 207);
-}
-
-#home-btn {
+      #home-btn {
     position: fixed;
     bottom: 20px;
     left: 20px;
@@ -118,53 +104,44 @@
     transform: scale(1.05);
 }
 
-  </style>
-<header class="text-xl sm:text-3xl md:text-5xl bg-violet-700/20  py-3 text-violet-300 mb-4 text-center mx-2 rounded-b-3xl shadow-md shadow-violet-800/30">
-  Тренажёр на скорость печати <span class="bg-yellow-100 text-yellow-800 text-lg font-medium px-2.5 py-0.5 rounded-full dark:bg-yellow-800 dark:text-yellow-300">Обычный</span>
-
-</header>
-<main class=" grid md:flex gap-4 p-4 max-w-7xl mx-auto">
-  <div class="mx-auto md:mx-0"><!-- Блок с контролами -->
-    <div class="controls border-2 border-violet-900 rounded-lg p-3 w-[300px] mb-2">
-        <label for="text-length" class="mr-2">Длина текста:</label>
-        <select id="text-length" class="py-2 pl-2 text-sm text-gray-200 border-2 rounded-md bg-zinc-800 border-violet-900">
-          <option value="10">для теста (< 10 букв)</option>
+    </style>
+    <header class="text-xl sm:text-3xl md:text-5xl bg-violet-700/20 py-3 text-violet-300 mb-4 text-center mx-2 rounded-b-3xl shadow-md shadow-violet-800/30">
+      Тренажёр на скорость печати <span class="bg-green-100 text-green-800 text-lg font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300">Легкий</span>
+    </header>
+    <main class="grid md:flex gap-4 p-4 max-w-7xl mx-auto">
+      <div class="mx-auto md:mx-0">
+        <div class="controls border-2 border-violet-900 rounded-lg p-3 w-[300px] mb-2">
+          <label for="text-length" class="mr-2">Длина текста:</label>
+          <select id="text-length" class="py-2 pl-2 text-sm text-gray-200 border-2 rounded-md bg-zinc-800 border-violet-900">
             <option value="50">50 символов</option>
             <option value="100">100 символов</option>
             <option value="150">150 символов</option>
             <option value="200">200 символов</option>
             <option value="500">500 символов</option>
             <option value="1000">1000 символов</option>
-        </select><div class="grid grid-cols-2 gap-2">
-        <button id="generate-btn" class=" bg-violet-500 hover:bg-violet-700 text-white font-bold mt-2 py-2 px-4 rounded">Начать</button>
-        <button id="reset-btn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 mt-2 rounded">Сбросить</button></div>
-    </div>
-    <div class="stats border-2 border-violet-900 rounded-lg p-3 w-[300px]">
-    <p>Скорость: <span id="wpm">0</span> символов в минуту</p>
-    <p class="">Точность: <span id="accuracy">100</span>%</p>
-    
-    <button id="start-btn" class="hidden">Начать</button>
-    
-</div></div>
-  <!-- Блок с статистикой -->
-  <div class="mx-auto max-w-4xl">
-  
-
-  <!-- Блок с игровой областью -->
-  <div class="game-area">
-      <div id="text-to-type" class="text-to-type w-full">
-          <p>Здесь будет текст для набора</p>
+          </select>
+          <div class="grid grid-cols-2 gap-2">
+            <button id="generate-btn" class="bg-violet-500 hover:bg-violet-700 text-white font-bold mt-2 py-2 px-4 rounded">Начать</button>
+            <button id="reset-btn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 mt-2 rounded">Сбросить</button>
+          </div>
+        </div>
+        <div class="stats border-2 border-violet-900 rounded-lg p-3 w-[300px]">
+          <p>Скорость: <span id="wpm">0</span> символов в минуту</p>
+          <p>Точность: <span id="accuracy">100</span>%</p>
+          <button id="start-btn" class="hidden">Начать</button>
+        </div>
       </div>
-      <textarea id="user-input" placeholder="Начните печатать здесь..." class="user-input w-full p-2 mt-2 border-2 rounded-md bg-zinc-800 border-violet-900" disabled></textarea>
-      <div id="warningMessage" class="warning-message mt-2 text-red-500"></div>
-  </div>
-</div>
-
-<button href="/" id="home-btn">На главную</button>
-  
-
-</main>
-
+      <div class="mx-auto max-w-4xl">
+        <div class="game-area">
+          <div id="text-to-type" class="text-to-type w-full">
+            <p>Здесь будет текст для набора</p>
+          </div>
+          <textarea id="user-input" placeholder="Начните печатать здесь..." class="user-input w-full p-2 mt-2 border-2 rounded-md bg-zinc-800 border-violet-900" disabled></textarea>
+          <div id="warningMessage" class="warning-message mt-2 text-red-500"></div>
+        </div>
+      </div>
+      <button href="/" id="home-btn">На главную</button>
+    </main>
     <script>
       // Основной функционал
       document.addEventListener("DOMContentLoaded", () => {
@@ -191,16 +168,14 @@
               const randomWord = words[Math.floor(Math.random() * words.length)];
               const wordLength = randomWord.length;
 
-              // Проверяем, можно ли добавить слово, не превышая заданную длину
               if (currentLength + wordLength + result.length <= length) {
                   result.push(randomWord);
                   currentLength += wordLength;
               } else {
-                  break; // Прерываем цикл, если добавление приведет к превышению длины
+                  break;
               }
           }
 
-          // Делаем первое слово заглавным
           if (result.length > 0) {
             result[0] = result[0].charAt(0).toUpperCase() + result[0].slice(1);
           }
@@ -224,7 +199,7 @@
           const typedText = userInput.value;
           const totalTyped = typedText.length;
 
-          const elapsedTime = (new Date() - startTime) / 60000; // в минутах
+          const elapsedTime = (new Date() - startTime) / 60000;
           const wpm = Math.round(totalTyped / elapsedTime);
           wpmSpan.textContent = wpm;
 
@@ -237,25 +212,19 @@
           const accuracy = Math.round((correctChars / totalTyped) * 100) || 0;
           accuracySpan.textContent = accuracy;
 
-          // Проверка на завершение теста
           if (typedText.length === originalText.length) {
-            endGame(); // Завершение теста, если длина совпадает
+            endGame();
           }
         }
 
-        let isGameEnded = false; // Флаг для отслеживания завершения игры
+        let isGameEnded = false;
 
         function endGame() {
-          if (isGameEnded) return; // Если игра уже завершена, ничего не делаем
-          isGameEnded = true; // Устанавливаем флаг завершения игры
+          if (isGameEnded) return;
+          isGameEnded = true;
 
           clearInterval(timer);
           userInput.disabled = true;
-
-          // Проверяем, что введенный текст имеет ту же длину, что и оригинальный
-          const totalTyped = userInput.value.length;
-          const accuracy = accuracySpan.textContent;
-          const wpm = wpmSpan.textContent;
         }
 
         startButton.addEventListener("click", startGame);
@@ -269,21 +238,22 @@
         });
 
         generateButton.addEventListener("click", () => {
-          // Проверяем, если игра уже началась, просто сбрасываем ввод и генерируем новый текст
           if (userInput.disabled === false) {
-            userInput.value = ""; // Очищаем поле ввода
+            userInput.value = "";
           }
-          // Генерируем новый текст
           startGame();
         });
 
-        // Обработка клика по области игры
         gameArea.addEventListener("click", () => {
           userInput.focus();
         });
 
         userInput.addEventListener("blur", endGame);
       });
+
+      function finishTest(difficulty) {
+        window.location.href = `/results?difficulty=${difficulty}`;
+    }
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" /> -->
+    <script src="{{ url_for('static', filename='words.js') }}"></script>
+    <!-- Подключаем words.js -->
+    <link rel="stylesheet" href="/static/public.css"/>
+
+    <title>Результаты теста на скорость печати</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .results {
+            font-size: 18px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <style>
+        body {
+          font-family: "Roboto Mono", monospace;
+          background-color: #302b35;
+          color: #f5f5f5;
+          display: block;
+          justify-content: center;
+          align-items: center;
+  
+          margin-left: auto;
+          margin-right: auto;
+        }
+  
+      
+        /* Стиль для баннера */
+        #devtools-banner {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            font-size: 2em;
+            text-align: center;
+            line-height: 100vh;
+            z-index: 9999;
+        }
+  .hidden {
+      display: none;
+    }
+  
+    </style>
+    <div id="devtools-banner">
+        ❌ Открытие инструментов разработчика запрещено! ❌
+      </div>
+      <h1 class="text-3xl md:text-5xl bg-violet-700/20 py-3 text-violet-300 mb-4 text-center mx-2 rounded-b-2xl shadow-md shadow-violet-800/30">
+        Результаты теста
+    </h1>
+        <div class="results">
+        <p>Скорость: <span id="final-wpm">0</span> CPM</p>
+        <p>Точность: <span id="final-accuracy">0</span>%</p>
+        <p>Дата и время: <span id="final-time">Нет данных</span></p>
+        
+    </div>
+    <a href="/" class="bg-violet-900/50 rounded-lg p-3 mt-20">Пройти тест еще раз</a>
+</body>
+<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const encodedData = urlParams.get('data');
+            const difficulty = urlParams.get('difficulty');
+
+            // Извлекаем и декодируем результаты
+            if (encodedData) {
+                const decodedData = decodeResults(encodedData);
+
+                document.getElementById('final-wpm').textContent = decodedData.wpm;
+                document.getElementById('final-accuracy').textContent = decodedData.accuracy;
+                document.getElementById('final-time').textContent = decodedData.dateTime;
+            }
+
+            // Применяем класс для уровня сложности
+            const difficultyLevelSpan = document.getElementById('difficulty-level');
+            const difficultyLevelContainer = document.getElementById('difficulty-level-container');
+
+            let difficultyClass = '';
+            let difficultyText = '';
+
+            switch (difficulty) {
+                case 'Эксперт':
+                    difficultyClass = 'bg-yellow-100 text-yellow-800 dark:bg-red-800 dark:text-red-300';
+                    difficultyText = 'Эксперт';
+                    break;
+                case 'Продвинутый':
+                    difficultyClass = 'bg-yellow-100 text-yellow-800 dark:bg-orange-800 dark:text-orange-300';
+                    difficultyText = 'Продвинутый';
+                    break;
+                case 'Обычный':
+                    difficultyClass = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-300';
+                    difficultyText = 'Обычный';
+                    break;
+                case 'Легкий':
+                    difficultyClass = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+                    difficultyText = 'Легкий';
+                    break;
+                default:
+                    difficultyClass = 'bg-gray-100 text-gray-800';
+                    difficultyText = 'Неизвестный';
+                    break;
+            }
+
+            // Добавляем класс и текст на страницу
+            difficultyLevelSpan.textContent = difficultyText;
+            difficultyLevelContainer.classList.add(difficultyClass);
+        });
+
+        // Функция для дешифрования данных
+        function decodeResults(encodedData) {
+            try {
+                const base64String = atob(encodedData);
+                const dataString = decodeURIComponent(base64String);
+                const parts = dataString.split(':');
+
+                return {
+                    wpm: parts[0],
+                    accuracy: parts[1],
+                    dateTime: parts.slice(2).join(':') // Составляем дату и время
+                };
+            } catch (e) {
+                console.error('Ошибка декодирования:', e);
+                return { wpm: '0', accuracy: '0', dateTime: 'Нет данных' };
+            }
+        }
+    </script>
+</html>

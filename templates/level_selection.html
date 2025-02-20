@@ -14,10 +14,10 @@
         </header>
         
         <div class="level-options">
-            <button class="level-option-btn" onclick="startTypingTest('beginner')">Начальный</button>
+            <button class="level-option-btn" onclick="window.location.href='/easy'">Начальный</button>
             <button class="level-option-btn" onclick="window.location.href='/intermediate'">Обычный</button>
-            <button class="level-option-btn" onclick="startTypingTest('advanced')">Продвинутый</button>
-            <button class="level-option-btn" onclick="startTypingTest('expert')">Эксперт</button>
+            <button class="level-option-btn" onclick="window.location.href='/advanced'">Продвинутый</button>
+            <button class="level-option-btn" onclick="window.location.href='/expert'">Эксперт</button>
         </div>
 
         <a href="{{ url_for('about') }}" class="level-about-btn">О нас</a>
@@ -26,3 +26,5 @@
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
+
+

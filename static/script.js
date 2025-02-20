@@ -36,7 +36,8 @@ let originalText = "";
 function startTypingTest() {
     wpmDisplay.textContent = '0';
     accuracyDisplay.textContent = '100';
-    originalText = generateText(parseInt(document.getElementById('text-length').value));
+        originalText = generateTextFromWords(); // Generate text without length
+
     textToTypeElement.innerText = originalText; // Устанавливаем текст для набора
 
     startTime = new Date();
@@ -108,16 +109,10 @@ function calculateAccuracy(inputText, originalText) {
 }
 
 // Генерация текста из осмысленных слов
-function generateTextFromWords(maxLength) {
+function generateTextFromWords() {
     let randomText = "";
-    while (randomText.length < maxLength) {
-        const randomWord = words[Math.floor(Math.random() * words.length)];
-        if (randomText.length + randomWord.length + 1 <= maxLength) {
-            randomText += (randomText ? " " : "") + randomWord;
-        } else {
-            break;
-        }
-    }
+    const randomWord = words[Math.floor(Math.random() * words.length)];
+    randomText += randomWord; // Generate a single random word
     // Делаем первую букву заглавной
     return randomText.charAt(0).toUpperCase() + randomText.slice(1);
 }
@@ -130,18 +125,49 @@ function setRandomText() {
 }
 
 // Завершение теста
+// Завершение теста
 function endTypingTest() {
     clearInterval(interval);
     const finalCpm = wpmDisplay.textContent;
     const finalAccuracy = accuracyDisplay.textContent;
 
-    // Проверка, что элемент существует
-    if (prevResultsElement) {
-        prevResultsElement.textContent = `Тест завершен! Скорость: ${finalCpm} CPM, Точность: ${finalAccuracy}%`;
-    }
+    // Получаем текущий уровень сложности
+    const difficulty = getDifficultyLevel();  // Получаем уровень сложности, можно передать как параметр
 
+    // Кодируем результаты
+    const encodedData = encodeResults(finalCpm, finalAccuracy, getCurrentDateTime());
+
+    // Перенаправляем на страницу результатов, передавая данные и уровень сложности
+    window.location.href = `/results?data=${encodedData}&difficulty=${difficulty}`;
+    
     // Дополнительно можно сбросить поле ввода и другие элементы, если это необходимо
     resetTypingTest(); // Вызываем функцию сброса, если нужно
+}
+
+
+// Функция для получения текущего уровня сложности
+function getDifficultyLevel() {
+    // Замените это на логику, которая определяет текущий уровень сложности
+    // Например, можно получить его из URL или из какой-то переменной
+    return "Легкий"; // Это временно для примера
+}
+
+
+// Функция для кодирования результатов
+function encodeResults(wpm, accuracy, dateTime) {
+    const dataString = `${wpm}:${accuracy}:${dateTime}`;
+    const encodedString = encodeURIComponent(btoa(dataString));
+    return encodedString;
+}
+
+// Функция для получения текущей даты и времени
+function getCurrentDateTime() {
+    const now = new Date();
+    const day = now.getDate().toString().padStart(2, '0');
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    return `${day}/${month} ${hours}:${minutes}`;
 }
 
 // Проверка завершения теста
@@ -186,33 +212,14 @@ userInput.addEventListener('input', () => {
 
 // Привязываем обработчики
 startButton.addEventListener('click', startTypingTest);
-document.getElementById('generate-btn').addEventListener('click', setRandomText);
+document.getElementById('generate-btn').addEventListener('click', () => {
+    const randomText = generateTextFromWords(); // Generate random text
+    textToTypeElement.innerText = randomText; // Set the generated text
+});
 
 // Анимации для элементов интерфейса
 window.onload = () => {
     gsap.from(".typing-game", { opacity: 0, duration: 1.5, y: -100 });
-}
-
-// Завершение теста
-function endTypingTest() {
-    clearInterval(interval);
-    const finalCpm = wpmDisplay.textContent;
-    const finalAccuracy = accuracyDisplay.textContent;
-
-    // Плавное перемещение и затемнение предыдущих результатов
-    const prevResultsElement = document.getElementById('prev-results');
-    prevResultsElement.textContent = `Скорость: ${finalCpm} CPM, Точность: ${finalAccuracy}%`;
-
-    // Анимация с помощью GSAP: перемещаем вниз и уменьшаем прозрачность
-    gsap.to(prevResultsElement, {
-        opacity: 0.6, // Затемнение
-        duration: 1,
-        ease: "power1.out",
-        onComplete: () => {
-            prevResultsElement.style.color = "#999"; // Затемняем текст
-            gsap.to(prevResultsElement, { opacity: 1, duration: 0.5 }); // Возвращаем на место с новым результатом
-        }
-    });
 }
 
 // Функция для сброса теста
@@ -227,3 +234,10 @@ function resetTypingTest() {
 
 // Привязываем обработчик к кнопке сброса
 document.getElementById('reset-btn').addEventListener('click', resetTypingTest);
+
+document.addEventListener("keydown", (event) => {
+    if (event.key === "Backspace" || event.key === "Delete") {
+        event.preventDefault(); // Блокируем удаление
+    }
+});
+
