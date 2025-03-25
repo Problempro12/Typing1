@@ -19,8 +19,13 @@
             <button class="level-option-btn" onclick="window.location.href='/advanced'">Продвинутый</button>
             <button class="level-option-btn" onclick="window.location.href='/expert'">Эксперт</button>
         </div>
+        <div class="level-options" style="margin-top: 0;">
+            <button class="leaderboard-btn" onclick="window.location.href='/leaderboard'" style="width: 100%;">
+                Таблица лидеров
+            </button>
+        </div>
 
-        <a href="{{ url_for('about') }}" class="level-about-btn">О нас</a>
+        <a href="{{ url_for('about') }}" class="level-about-btn" style="margin-top: 10px;">О нас</a>
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>

@@ -25,6 +25,7 @@ const accuracyDisplay = document.getElementById('accuracy');
 const startButton = document.getElementById('start-btn');
 const accuracySpan = document.getElementById('accuracy'); // Инициализация accuracySpan
 const wpmSpan = document.getElementById('wpm');
+const difficulty = getDifficultyLevel('difficulty');
 
 
 // Переменные для отслеживания состояния
@@ -123,51 +124,75 @@ function setRandomText() {
     const randomText = generateTextFromWords(length); // Генерируем текст из осмысленных слов
     textToTypeElement.innerText = randomText; // Устанавливаем текст
 }
+// Функция для получения текущего уровня сложности
+function getDifficultyLevel() {
+    // Получаем текущий URL
+    const currentPath = window.location.pathname;
+    
+    // Определяем уровень сложности на основе URL
+    switch (currentPath) {
+        case '/expert':
+            return 'Эксперт';
+        case '/advanced':
+            return 'Продвинутый';
+        case '/intermediate':
+            return 'Обычный';
+        case '/easy':
+            return 'Легкий';
+        default:
+            return 'Обычный';
+    }
+}
+// Функция для получения текущего уровня сложности
+function getDifficultyLevel() {
+    // Получаем текущий URL
+    const currentPath = window.location.pathname;
+    
+    // Определяем уровень сложности на основе URL
+    switch (currentPath) {
+        case '/expert':
+            return 'Эксперт';
+        case '/advanced':
+            return 'Продвинутый';
+        case '/intermediate':
+            return 'Обычный';
+        case '/easy':
+            return 'Легкий';
+        default:
+            return 'Обычный';
+    }
+}
 
 // Завершение теста
 // Завершение теста
 function endTypingTest() {
     clearInterval(interval);
-    const finalCpm = wpmDisplay.textContent;
+    const finalWpm = wpmDisplay.textContent;
     const finalAccuracy = accuracyDisplay.textContent;
-
-    // Получаем текущий уровень сложности
-    const difficulty = getDifficultyLevel();  // Получаем уровень сложности, можно передать как параметр
-
+    const difficulty = getDifficultyLevel();
     // Кодируем результаты
-    const encodedData = encodeResults(finalCpm, finalAccuracy, getCurrentDateTime());
-
-    // Перенаправляем на страницу результатов, передавая данные и уровень сложности
-    window.location.href = `/results?data=${encodedData}&difficulty=${difficulty}`;
+    const encodedData = encodeResults(finalWpm, finalAccuracy, difficulty, getCurrentDateTime());
     
-    // Дополнительно можно сбросить поле ввода и другие элементы, если это необходимо
-    resetTypingTest(); // Вызываем функцию сброса, если нужно
+    // Перенаправляем на страницу результатов
+    window.location.href = `/results?data=${encodedData}`;
 }
-
-
-// Функция для получения текущего уровня сложности
-function getDifficultyLevel() {
-    // Замените это на логику, которая определяет текущий уровень сложности
-    // Например, можно получить его из URL или из какой-то переменной
-    return "Легкий"; // Это временно для примера
-}
-
 
 // Функция для кодирования результатов
-function encodeResults(wpm, accuracy, dateTime) {
-    const dataString = `${wpm}:${accuracy}:${dateTime}`;
-    const encodedString = encodeURIComponent(btoa(dataString));
-    return encodedString;
+function encodeResults(wpm, accuracy, difficulty, dateTime) {
+    const data = {
+        wpm: wpm,
+        accuracy: accuracy,
+        difficulty: difficulty,
+        dateTime: dateTime
+    };
+    return btoa(unescape(encodeURIComponent(JSON.stringify(data))));
 }
 
 // Функция для получения текущей даты и времени
 function getCurrentDateTime() {
     const now = new Date();
-    const day = now.getDate().toString().padStart(2, '0');
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const hours = now.getHours().toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-    return `${day}/${month} ${hours}:${minutes}`;
+    // Возвращаем ISO строку, которая правильно сортируется
+    return now.toISOString();
 }
 
 // Проверка завершения теста
@@ -240,4 +265,3 @@ document.addEventListener("keydown", (event) => {
         event.preventDefault(); // Блокируем удаление
     }
 });
-

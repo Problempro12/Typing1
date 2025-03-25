@@ -170,6 +170,23 @@ select {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
+.leaderboard-btn {
+    background-color: #357c38;
+    border: none;
+    color: #fff;
+    padding: 15px 20px;
+    font-size: 1.2em;
+    cursor: pointer;
+    border-radius: 4px;
+    margin: 5px;
+    transition: background 0.3s;
+    flex: 1 1 150px;
+}
+
+.leaderboard-btn:hover {
+    background-color: #2e6a30;
+}
+
 .level-title {
     font-size: 2em;
     color: #4caf50;
@@ -185,7 +202,7 @@ select {
     display: flex; /* Используем Flexbox */
     justify-content: center; /* Центрируем кнопки по горизонтали */
     align-items: center; /* Центрируем кнопки по вертикали */
-    margin: 20px 0; /* Отступы сверху и снизу */
+    margin: 20px 0 0 0; /* Отступы сверху и снизу */
     flex-wrap: wrap; /* Разрешаем перенос кнопок на новую строку */
 }
 

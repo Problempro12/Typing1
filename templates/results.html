@@ -30,7 +30,7 @@
           display: block;
           justify-content: center;
           align-items: center;
-  
+          overflow: hidden;
           margin-left: auto;
           margin-right: auto;
         }
@@ -59,83 +59,331 @@
     <div id="devtools-banner">
         ❌ Открытие инструментов разработчика запрещено! ❌
       </div>
-      <h1 class="text-3xl md:text-5xl bg-violet-700/20 py-3 text-violet-300 mb-4 text-center mx-2 rounded-b-2xl shadow-md shadow-violet-800/30">
+      <h1 class="text-3xl md:text-4xl bg-violet-700/20 py-2 text-violet-300 mb-4 text-center mx-2 rounded-b-2xl shadow-md shadow-violet-800/30">
         Результаты теста
     </h1>
         <div class="results">
         <p>Скорость: <span id="final-wpm">0</span> CPM</p>
         <p>Точность: <span id="final-accuracy">0</span>%</p>
         <p>Дата и время: <span id="final-time">Нет данных</span></p>
+        <p>Уровень сложности: <span id="difficulty-level" class="font-bold"></span></p>
         
+        <!-- Форма для добавления результата -->
+        <div id="add-score-form" class="mt-4 p-2">
+            <h3 class="text-xl mb-4 border-t-2 border-violet-900 pt-4">Сохранить результат</h3>
+            <div class="flex gap-4 justify-center items-center">
+                <input type="text" 
+                       id="player-name" 
+                       placeholder="Введите ваше имя" 
+                       class="bg-zinc-800 border-2 border-violet-900 rounded px-4 py-2"
+                       maxlength="20">
+                <button onclick="saveScore()" 
+                        class="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded">
+                    Сохранить
+                </button>
+            </div>
+        </div>
+
+        <!-- Таблица рекордов -->
+        <div class="high-scores border-2 border-violet-900 rounded-lg p-4 mt-8">
+            <h2 class="text-2xl mb-4">Таблица рекордов</h2>
+            <!-- Фильтры и сортировка -->
+            <div class="filters mb-4">
+                <div class="flex flex-wrap gap-4 justify-center">
+                    <div class="filter-group">
+                        <label class="mr-2">Сложность:</label>
+                        <select id="difficulty-filter" 
+                                class="bg-zinc-800 border-2 border-violet-900 rounded px-2 py-1">
+                            <option value="all">Все</option>
+                            <option value="Легкий">Легкий</option>
+                            <option value="Обычный">Обычный</option>
+                            <option value="Продвинутый">Продвинутый</option>
+                            <option value="Эксперт">Эксперт</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="mr-2">Сортировка:</label>
+                        <select id="sort-by" 
+                                class="bg-zinc-800 border-2 border-violet-900 rounded px-2 py-1">
+                            <option value="wpm">По скорости</option>
+                            <option value="accuracy">По точности</option>
+                            <option value="date">По дате</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto overflow-y-auto" style="max-height: 250px;">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b-2 border-violet-800 sticky top-0 bg-[#302b35] shadow-sm">
+                            <th class="p-2">Место</th>
+                            <th class="p-2">Имя</th>
+                            <th class="p-2">Скорость</th>
+                            <th class="p-2">Точность</th>
+                            <th class="p-2">Сложность</th>
+                            <th class="p-2">Дата</th>
+                        </tr>
+                    </thead>
+                    <tbody id="high-scores-table" class="divide-y divide-violet-800/30">
+                        <!-- Здесь будут отображаться рекорды -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-center text-sm text-violet-400 mt-2">
+                Прокрутите для просмотра всех результатов
+            </div>
+        </div>
     </div>
-    <a href="/" class="bg-violet-900/50 rounded-lg p-3 mt-20">Пройти тест еще раз</a>
+    </div>
+    <div class="text-center mt-[20px] mb-[20px]">
+        <a href="/" class="bg-violet-800 hover:bg-violet-900 text-white py-2 px-4 rounded transition-colors duration-200">
+            Пройти тест еще раз
+        </a>
+    </div>
 </body>
 <script>
         document.addEventListener("DOMContentLoaded", function() {
             const urlParams = new URLSearchParams(window.location.search);
             const encodedData = urlParams.get('data');
             const difficulty = urlParams.get('difficulty');
-
-            // Извлекаем и декодируем результаты
+            
             if (encodedData) {
                 const decodedData = decodeResults(encodedData);
-
+                
                 document.getElementById('final-wpm').textContent = decodedData.wpm;
                 document.getElementById('final-accuracy').textContent = decodedData.accuracy;
-                document.getElementById('final-time').textContent = decodedData.dateTime;
+                document.getElementById('difficulty-level').textContent = decodedData.difficulty;
+                document.getElementById('final-time').textContent = formatDateTime(decodedData.dateTime);
+                
             }
-
-            // Применяем класс для уровня сложности
-            const difficultyLevelSpan = document.getElementById('difficulty-level');
-            const difficultyLevelContainer = document.getElementById('difficulty-level-container');
-
-            let difficultyClass = '';
-            let difficultyText = '';
-
-            switch (difficulty) {
-                case 'Эксперт':
-                    difficultyClass = 'bg-yellow-100 text-yellow-800 dark:bg-red-800 dark:text-red-300';
-                    difficultyText = 'Эксперт';
-                    break;
-                case 'Продвинутый':
-                    difficultyClass = 'bg-yellow-100 text-yellow-800 dark:bg-orange-800 dark:text-orange-300';
-                    difficultyText = 'Продвинутый';
-                    break;
-                case 'Обычный':
-                    difficultyClass = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-300';
-                    difficultyText = 'Обычный';
-                    break;
-                case 'Легкий':
-                    difficultyClass = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-                    difficultyText = 'Легкий';
-                    break;
-                default:
-                    difficultyClass = 'bg-gray-100 text-gray-800';
-                    difficultyText = 'Неизвестный';
-                    break;
-            }
-
-            // Добавляем класс и текст на страницу
-            difficultyLevelSpan.textContent = difficultyText;
-            difficultyLevelContainer.classList.add(difficultyClass);
+            
+            displayHighScores();
         });
 
         // Функция для дешифрования данных
         function decodeResults(encodedData) {
             try {
-                const base64String = atob(encodedData);
-                const dataString = decodeURIComponent(base64String);
-                const parts = dataString.split(':');
-
-                return {
-                    wpm: parts[0],
-                    accuracy: parts[1],
-                    dateTime: parts.slice(2).join(':') // Составляем дату и время
-                };
+                const jsonString = decodeURIComponent(escape(atob(encodedData)));
+                return JSON.parse(jsonString);
             } catch (e) {
                 console.error('Ошибка декодирования:', e);
-                return { wpm: '0', accuracy: '0', dateTime: 'Нет данных' };
+                return {
+                    wpm: '0',
+                    accuracy: '0',
+                    difficulty: 'Обычный',
+                    dateTime: 'Нет данных'
+                };
             }
         }
+
+        function saveResult(result) {
+            let scores = JSON.parse(localStorage.getItem('typingScores') || '[]');
+            scores.push(result);
+            scores.sort((a, b) => b.wpm - a.wpm); // Сортируем по скорости
+            scores = scores.slice(0, 10); // Оставляем только топ-10
+            localStorage.setItem('typingScores', JSON.stringify(scores));
+        }
+
+        function displayHighScores() {
+            fetch('/api/scores')
+                .then(response => response.json())
+                .then(scores => {
+                    currentScores = scores; // Сохраняем scores в currentScores
+                    const tableBody = document.getElementById('high-scores-table');
+                    if (!currentScores || currentScores.length === 0) {
+                        tableBody.innerHTML = `
+                            <tr class="border-b border-violet-800">
+                                <td colspan="6" class="p-4 text-center text-gray-400">
+                                    Пока нет результатов
+                                </td>
+                            </tr>
+                        `;
+                        return;
+                    }
+                    
+                    displayFilteredScores(); // Вызываем функцию отображения с фильтрами
+                })
+                .catch(error => {
+                    console.error('Ошибка загрузки результатов:', error);
+                    const tableBody = document.getElementById('high-scores-table');
+                    tableBody.innerHTML = `
+                        <tr class="border-b border-violet-800/30">
+                            <td colspan="6" class="p-4 text-center text-red-400">
+                                Ошибка загрузки результатов
+                            </td>
+                        </tr>
+                    `;
+                });
+        }
+
+        function getDifficultyClass(difficulty) {
+            switch (difficulty) {
+                case 'Эксперт':
+                    return 'bg-red-900/50 text-red-200';
+                case 'Продвинутый':
+                    return 'bg-orange-900/50 text-orange-200';
+                case 'Обычный':
+                    return 'bg-yellow-900/50 text-yellow-200';
+                case 'Легкий':
+                    return 'bg-green-900/50 text-green-200';
+                default:
+                    return 'bg-gray-900/50 text-gray-200';
+            }
+        }
+
+        function analyzeResults(wpm, accuracy, difficulty) {
+            const analysisDiv = document.getElementById('analysis-content');
+            const recommendationsList = document.getElementById('recommendations-list');
+            
+            let analysis = '';
+            let recommendations = [];
+            
+            // Анализ скорости
+            if (wpm < 100) {
+                analysis += '<p>Ваша скорость печати ниже среднего. ';
+                recommendations.push('Попрактикуйтесь на более легком уровне сложности');
+                recommendations.push('Уделите внимание правильной постановке рук');
+            } else if (wpm < 200) {
+                analysis += '<p>У вас хорошая скорость печати. ';
+                recommendations.push('Попробуйте увеличить сложность');
+            } else {
+                analysis += '<p>У вас отличная скорость печати! ';
+                recommendations.push('Попробуйте режим эксперта');
+            }
+            
+            // Анализ точности
+            if (accuracy < 90) {
+                analysis += 'Точность требует улучшения.</p>';
+                recommendations.push('Печатайте медленнее, фокусируясь на точности');
+            } else {
+                analysis += 'Отличная точность!</p>';
+            }
+            
+            analysisDiv.innerHTML = analysis;
+            recommendationsList.innerHTML = recommendations.map(rec => `<li>${rec}</li>`).join('');
+        }
+
+        function shareResult(platform) {
+            const text = `Мой результат в тренажере печати:\nСкорость: ${document.getElementById('final-wpm').textContent} CPM\nТочность: ${document.getElementById('final-accuracy').textContent}%\nУровень: ${difficulty}`;
+            
+            const urls = {
+                vk: `https://vk.com/share.php?text=${encodeURIComponent(text)}`,
+                telegram: `https://t.me/share/url?text=${encodeURIComponent(text)}`
+            };
+            
+            window.open(urls[platform], '_blank');
+        }
+
+        function saveScore() {
+            const playerName = document.getElementById('player-name').value.trim();
+            if (!playerName) {
+                alert('Пожалуйста, введите ваше имя');
+                return;
+            }
+
+            const score = {
+                name: playerName,
+                wpm: document.getElementById('final-wpm').textContent,
+                accuracy: document.getElementById('final-accuracy').textContent,
+                difficulty: document.getElementById('difficulty-level').textContent,
+                dateTime: document.getElementById('final-time').textContent
+            };
+
+            fetch('/api/scores', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(score)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('add-score-form').style.display = 'none';
+                    displayHighScores();
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка сохранения результата:', error);
+                alert('Произошла ошибка при сохранении результата');
+            });
+        }
+
+        let currentScores = [];
+        
+        function displayFilteredScores() {
+            const difficultyFilter = document.getElementById('difficulty-filter').value;
+            const sortBy = document.getElementById('sort-by').value;
+            
+            let filteredScores = [...currentScores];
+            
+            if (difficultyFilter !== 'all') {
+                filteredScores = filteredScores.filter(score => score.difficulty === difficultyFilter);
+            }
+            
+            filteredScores.sort((a, b) => {
+                switch (sortBy) {
+                    case 'wpm':
+                        return parseInt(b.wpm) - parseInt(a.wpm);
+                    case 'accuracy':
+                        return parseInt(b.accuracy) - parseInt(a.accuracy);
+                    case 'date':
+                        const dateA = new Date(a.dateTime);
+                        const dateB = new Date(b.dateTime);
+                        return dateB.getTime() - dateA.getTime();
+                    default:
+                        return 0;
+                }
+            });
+            
+            const tableBody = document.getElementById('high-scores-table');
+            if (!filteredScores.length) {
+                tableBody.innerHTML = `
+                    <tr class="border-b border-violet-800/30">
+                        <td colspan="6" class="p-4 text-center text-gray-400">
+                            Нет результатов для выбранного фильтра
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tableBody.innerHTML = filteredScores.map((score, index) => `
+                <tr class="border-b border-violet-800/30 ${index === 0 ? 'bg-violet-900/30' : ''}">
+                    <td class="p-2">${index + 1}</td>
+                    <td class="p-2">${score.name}</td>
+                    <td class="p-2">${score.wpm}</td>
+                    <td class="p-2">${score.accuracy}%</td>
+                    <td class="p-2">
+                        <span class="px-2 py-1 rounded-full text-sm ${getDifficultyClass(score.difficulty)}">
+                            ${score.difficulty}
+                        </span>
+                    </td>
+                    <td class="p-2">${formatDateTime(score.dateTime)}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Функция форматирования даты для отображения
+        function formatDateTime(isoString) {
+            try {
+                const date = new Date(isoString);
+                if (isNaN(date)) return isoString;
+                
+                const day = date.getDate().toString().padStart(2, '0');
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const hours = date.getHours().toString().padStart(2, '0');
+                const minutes = date.getMinutes().toString().padStart(2, '0');
+                const seconds = date.getSeconds().toString().padStart(2, '0');
+                return `${day}/${month} ${hours}:${minutes}:${seconds}`;
+            } catch (e) {
+                return isoString;
+            }
+        }
+
+        // Добавляем обработчики событий для фильтров после загрузки DOM
+        document.getElementById('difficulty-filter').addEventListener('change', displayFilteredScores);
+        document.getElementById('sort-by').addEventListener('change', displayFilteredScores);
     </script>
 </html>
