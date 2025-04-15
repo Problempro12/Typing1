@@ -3,38 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Typing Game</title>
-    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"> -->
-    <script src="{{ url_for('static', filename='words.js') }}"></script> <!-- Подключаем words.js -->
+    <title>KpitTyping | Тренажер печати</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="{{ url_for('static', filename='words.js') }}"></script>
 </head>
 <body>
     <div id="devtools-banner">
         ❌ Открытие инструментов разработчика запрещено! ❌
     </div>
 
-    <script>
-        // Отслеживание нажатия клавиши F12 или комбинаций для открывания инструментов разработчика
-        document.addEventListener('keydown', function (event) {
-            if (event.key === 'F12' || (event.ctrlKey && event.shiftKey && event.key === 'I')) {
-                event.preventDefault(); // Блокировка действия
-                showBanner(); // Показ баннера
-            }
-        });
-
-        // Функция для показа баннера
-        function showBanner() {
-            const banner = document.getElementById('devtools-banner');
-            banner.style.display = 'block'; // Показываем баннер
-        }
-
-        // Функция для скрытия баннера (если нужно, можно вызвать при закрытии инструментов)
-        function hideBanner() {
-            const banner = document.getElementById('devtools-banner');
-            banner.style.display = 'none'; // Скрываем баннер
-        }
-    </script>
     <style>
-        /* Стиль для баннера */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            min-height: 100vh;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(79, 70, 229, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(124, 58, 237, 0.05) 0%, transparent 50%);
+            animation: rotate 60s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .typing-game {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(79, 70, 229, 0.1);
+        }
+
+        header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+
+        .controls label {
+            font-weight: 500;
+            color: #64748b;
+        }
+
+        select, button, .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+            color: #64748b;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        select {
+            min-width: 150px;
+        }
+
+        button:hover, .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            color: #4f46e5;
+        }
+
+        #generate-btn, #start-btn {
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            color: white;
+        }
+
+        #generate-btn:hover, #start-btn:hover {
+            box-shadow: 0 0 15px rgba(124, 58, 237, 0.3);
+        }
+
+        .game-area {
+            margin-bottom: 2rem;
+        }
+
+        #text-to-type {
+            padding: 1.5rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+            color: #64748b;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        #user-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid rgba(79, 70, 229, 0.2);
+            border-radius: 12px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            resize: none;
+            height: 150px;
+            background: white;
+            color: #1e293b;
+            transition: border-color 0.3s;
+        }
+
+        #user-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .stats {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            flex-wrap: wrap;
+        }
+
+        .stats p {
+            font-size: 1.1rem;
+            color: #64748b;
+        }
+
+        .stats span {
+            font-weight: 600;
+            color: #4f46e5;
+        }
+
+        .results-container {
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            margin-top: 2rem;
+        }
+
+        .prev-results {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        #home-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            font-weight: 500;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        #home-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        #home-btn i {
+            font-size: 1.1rem;
+        }
+
         #devtools-banner {
             display: none;
             position: fixed;
@@ -42,41 +227,52 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
+            background-color: rgba(0, 0, 0, 0.95);
             color: white;
             font-size: 2em;
             text-align: center;
             line-height: 100vh;
             z-index: 9999;
+            font-family: 'Montserrat', sans-serif;
         }
 
-        #home-btn {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    background-color: #6a0dad; /* Фиолетовый фон */
-    color: white;
-    font-size: 16px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    transition: background-color 0.3s, transform 0.2s;
-}
+        .correct {
+            color: #10b981;
+        }
 
-#home-btn:hover {
-    background-color: #5500aa;
-    transform: scale(1.05);
-}
+        .incorrect {
+            color: #ef4444;
+            text-decoration: underline wavy #ef4444;
+        }
 
+        @media (max-width: 768px) {
+            .typing-game {
+                margin: 1rem;
+                padding: 1rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .controls > * {
+                width: 100%;
+            }
+
+            .stats {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+        }
     </style>
+
     <div class="typing-game">
         <header>
             <h1>Тренажер на скорость печати</h1>
         </header>
 
-        <!-- Элементы управления -->
         <div class="controls">
             <label for="text-length">Длина текста:</label>
             <select id="text-length">
@@ -85,44 +281,70 @@
                 <option value="150">150 символов</option>
                 <option value="200">200 символов</option>
             </select>
-            <button id="generate-btn">Сгенерировать текст</button>
-            <a href="{{ url_for('about') }}" class="btn">О нас</a>
+            <button id="generate-btn">
+                <i class="fas fa-sync-alt"></i>
+                Сгенерировать текст
+            </button>
+            <a href="{{ url_for('about') }}" class="btn">
+                <i class="fas fa-info-circle"></i>
+                О нас
+            </a>
         </div>
         
-        <!-- Игровая зона -->
         <section class="game-area">
             <div id="text-to-type">
                 <p>Здесь будет текст для набора</p>
             </div>
-            <textarea id="user-input" placeholder="Начните печатать здесь..."></textarea>
+            <textarea id="user-input" placeholder="Начните печатать здесь..." spellcheck="false"></textarea>
         </section>
         
-        <!-- Статистика -->
         <div class="stats">
             <p>Скорость: <span id="wpm">0</span> CPM</p>
             <p>Точность: <span id="accuracy">100</span>%</p>
-            <button id="start-btn">Начать</button>
-            <button id="reset-btn">Сбросить</button>
+            <button id="start-btn">
+                <i class="fas fa-play"></i>
+                Начать
+            </button>
+            <button id="reset-btn">
+                <i class="fas fa-redo"></i>
+                Сбросить
+            </button>
         </div>
         
-        <!-- Контейнер для предыдущих результатов -->
         <div class="results-container">
             <p id="prev-results" class="prev-results"></p>
         </div>
     </div>
 
+    <a href="/" id="home-btn">
+        <i class="fas fa-home"></i>
+        На главную
+    </a>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
-    <script src="{{ url_for('static', filename='script.js') }}"></script> <!-- Основной скрипт -->
-    <script type="text/javascript">
-
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
         document.ondragstart = noselect;
-
         document.onselectstart = noselect;
-
         document.oncontextmenu = noselect;
-
         function noselect() {return false;}
 
-</script>
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'F12' || (event.ctrlKey && event.shiftKey && event.key === 'I')) {
+                event.preventDefault();
+                showBanner();
+            }
+        });
+
+        function showBanner() {
+            const banner = document.getElementById('devtools-banner');
+            banner.style.display = 'block';
+        }
+
+        function hideBanner() {
+            const banner = document.getElementById('devtools-banner');
+            banner.style.display = 'none';
+        }
+    </script>
 </body>
 </html>

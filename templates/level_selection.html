@@ -4,7 +4,275 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Выбор уровня сложности</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            min-height: 100vh;
+            background: #f0f2f5;
+            color: #1e293b;
+            line-height: 1.6;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+            animation: rotate 30s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .level-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+        }
+
+        .level-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .level-description {
+            font-size: 1.1rem;
+            color: #64748b;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .level-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .level-option-btn {
+            background: white;
+            border: none;
+            border-radius: 16px;
+            padding: 2rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1e293b;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+        }
+
+        .level-option-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            transition: all 0.3s;
+        }
+
+        .level-option-btn:nth-child(1)::before {
+            background: linear-gradient(90deg, #10b981, #34d399);
+        }
+
+        .level-option-btn:nth-child(2)::before {
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        }
+
+        .level-option-btn:nth-child(3)::before {
+            background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+        }
+
+        .level-option-btn:nth-child(4)::before {
+            background: linear-gradient(90deg, #ef4444, #f87171);
+        }
+
+        .level-option-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .level-option-btn:active {
+            transform: translateY(0);
+        }
+
+        .level-option-btn i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .level-option-btn:nth-child(1) i {
+            color: #10b981;
+        }
+
+        .level-option-btn:nth-child(2) i {
+            color: #3b82f6;
+        }
+
+        .level-option-btn:nth-child(3) i {
+            color: #8b5cf6;
+        }
+
+        .level-option-btn:nth-child(4) i {
+            color: #ef4444;
+        }
+
+        .leaderboard-btn {
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            border: none;
+            border-radius: 16px;
+            padding: 1.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .leaderboard-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(79, 70, 229, 0.3);
+        }
+
+        .leaderboard-btn:active {
+            transform: translateY(0);
+        }
+
+        .leaderboard-btn i {
+            font-size: 1.5rem;
+        }
+
+        .level-about-btn {
+            display: inline-block;
+            background: white;
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            text-decoration: none;
+            margin-top: 2rem;
+        }
+
+        .level-about-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            color: #4f46e5;
+        }
+
+        .level-about-btn:active {
+            transform: translateY(0);
+        }
+
+        .level-about-btn i {
+            margin-right: 0.5rem;
+        }
+
+        .footer {
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1.5rem;
+            font-size: 0.95rem;
+            z-index: 10;
+        }
+
+        .footer p {
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 500;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .level-title {
+                font-size: 2rem;
+            }
+            
+            .level-option-btn {
+                min-height: 180px;
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .level-container {
+                padding: 1rem;
+            }
+            
+            .level-title {
+                font-size: 1.75rem;
+            }
+            
+            .level-description {
+                font-size: 1rem;
+            }
+            
+            .level-option-btn {
+                min-height: 150px;
+                padding: 1.25rem;
+                font-size: 1.1rem;
+            }
+            
+            .level-option-btn i {
+                font-size: 2rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="level-container">
@@ -14,18 +282,40 @@
         </header>
         
         <div class="level-options">
-            <button class="level-option-btn" onclick="window.location.href='/easy'">Начальный</button>
-            <button class="level-option-btn" onclick="window.location.href='/intermediate'">Обычный</button>
-            <button class="level-option-btn" onclick="window.location.href='/advanced'">Продвинутый</button>
-            <button class="level-option-btn" onclick="window.location.href='/expert'">Эксперт</button>
+            <button class="level-option-btn" onclick="window.location.href='/easy'">
+                <i class="fas fa-star"></i>
+                Начальный
+            </button>
+            <button class="level-option-btn" onclick="window.location.href='/intermediate'">
+                <i class="fas fa-user"></i>
+                Обычный
+            </button>
+            <button class="level-option-btn" onclick="window.location.href='/advanced'">
+                <i class="fas fa-user-graduate"></i>
+                Продвинутый
+            </button>
+            <button class="level-option-btn" onclick="window.location.href='/expert'">
+                <i class="fas fa-crown"></i>
+                Эксперт
+            </button>
         </div>
         <div class="level-options" style="margin-top: 0;">
-            <button class="leaderboard-btn" onclick="window.location.href='/leaderboard'" style="width: 100%;">
+            <button class="leaderboard-btn" onclick="window.location.href='/leaderboard'">
+                <i class="fas fa-trophy"></i>
                 Таблица лидеров
             </button>
         </div>
 
-        <a href="{{ url_for('about') }}" class="level-about-btn" style="margin-top: 10px;">О нас</a>
+        <div style="text-align: center;">
+            <a href="{{ url_for('about') }}" class="level-about-btn">
+                <i class="fas fa-info-circle"></i>
+                О проекте
+            </a>
+        </div>
+        
+        <div class="footer">
+            <p>© 2025 KpitTyping. Все права защищены.</p>
+        </div>
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>

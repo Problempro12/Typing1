@@ -1,267 +1,215 @@
-// Запрет F12, выделения и копирования
-document.addEventListener("keydown", function (event) {
-    if (
-      event.key === "F12" ||
-      (event.ctrlKey && event.shiftKey && event.key === "I")
-    ) {
-      event.preventDefault();
-      document.getElementById("devtools-banner").style.display = "block";
+// Находим все элементы
+document.addEventListener('DOMContentLoaded', function() {
+  const textToType = document.getElementById('text-to-type');
+const userInput = document.getElementById('user-input');
+  const generateBtn = document.getElementById('generate-btn');
+  const startBtn = document.getElementById('start-btn');
+  const resetBtn = document.getElementById('reset-btn');
+  const textLengthSelect = document.getElementById('text-length');
+const wpmSpan = document.getElementById('wpm');
+  const accuracySpan = document.getElementById('accuracy');
+
+  let currentText = '';
+  let startTime = null;
+  let timer = null;
+
+  // Генерация текста заданной длины
+  function generateText(length) {
+    let result = [];
+    let currentLength = 0;
+
+    while (currentLength < length) {
+      const randomWord = words[Math.floor(Math.random() * words.length)];
+      
+      // Делаем первую букву первого слова заглавной
+      const wordToAdd = result.length === 0 
+        ? randomWord.charAt(0).toUpperCase() + randomWord.slice(1) 
+        : randomWord;
+
+      // Учитываем длину слова и пробел
+      const wordLength = wordToAdd.length + (result.length > 0 ? 1 : 0);
+      
+      if (currentLength + wordLength <= length) {
+        result.push(wordToAdd);
+        currentLength += wordLength;
+      } else {
+        break;
+      }
+    }
+
+    return result.join(' ');
+  }
+
+  // Обновление текста для набора
+  function updateText() {
+    const length = parseInt(textLengthSelect.value);
+    currentText = generateText(length);
+    
+    // Разбиваем текст на символы и создаем span для каждого
+    const spans = [];
+    for (let i = 0; i < currentText.length; i++) {
+      const char = currentText[i];
+      if (char === ' ') {
+        spans.push(' ');
+      } else {
+        spans.push(`<span class="char">${char}</span>`);
+      }
+    }
+    textToType.innerHTML = spans.join('');
+    
+    userInput.value = '';
+    startTime = null;
+    if (timer) clearInterval(timer);
+    wpmSpan.textContent = '0';
+    accuracySpan.textContent = '100';
+  }
+
+  // Обновление статистики
+  function updateStats() {
+    if (!startTime) {
+      startTime = Date.now();
+      timer = setInterval(updateStats, 100);
+    }
+    
+    const typedText = userInput.value;
+    const elapsedMinutes = (Date.now() - startTime) / 60000;
+    const wpm = Math.round(typedText.length / elapsedMinutes);
+    
+    let correctChars = 0;
+    const chars = textToType.getElementsByClassName('char');
+    let charIndex = 0;
+    
+    // Проверяем каждый символ
+    for (let i = 0; i < typedText.length && i < currentText.length; i++) {
+      if (currentText[i] === ' ') {
+        if (typedText[i] === ' ') correctChars++;
+        continue;
+      }
+      
+      if (charIndex < chars.length) {
+        if (typedText[i] === currentText[i]) {
+            correctChars++;
+          chars[charIndex].className = 'char correct';
+        } else {
+          chars[charIndex].className = 'char incorrect';
+        }
+        charIndex++;
+      }
+    }
+
+    // Подсветка текущего символа
+    let nextCharIndex = 0;
+    for (let i = 0; i < currentText.length && i < typedText.length; i++) {
+      if (currentText[i] !== ' ') nextCharIndex++;
+    }
+    
+    if (nextCharIndex < chars.length) {
+      chars[nextCharIndex].className = 'char active';
+    }
+
+    // Сброс классов для оставшихся символов
+    for (let i = nextCharIndex + 1; i < chars.length; i++) {
+      chars[i].className = 'char';
+    }
+    
+    // Вычисляем точность
+    const accuracy = typedText.length > 0 
+      ? Math.round((correctChars / typedText.length) * 100) 
+      : 100;
+    
+    wpmSpan.textContent = wpm;
+    accuracySpan.textContent = accuracy;
+
+    // Проверка завершения текста
+    if (typedText.length === currentText.length) {
+      clearInterval(timer);
+      
+      // Кодируем результаты для URL
+      const results = {
+        wpm: wpm,
+        accuracy: accuracy,
+        difficulty: document.title.includes('Начальный') ? 'Легкий' : 
+                   document.title.includes('Нормальный') ? 'Нормальный' : 
+                   document.title.includes('Продвинутый') ? 'Продвинутый' : 
+                   document.title.includes('Сложный') ? 'Сложный' : 'Легкий',
+        dateTime: new Date().toISOString()
+      };
+      const jsonString = JSON.stringify(results);
+      const encodedData = encodeURIComponent(jsonString);
+      
+      // Перенаправляем на страницу результатов через небольшую задержку
+      setTimeout(() => {
+        window.location.href = `/results?data=${encodedData}`;
+      }, 1500);
+    }
+  }
+
+  // Обработчики событий
+  generateBtn.addEventListener('click', () => {
+    updateText();
+    userInput.focus();
+  });
+
+  startBtn.addEventListener('click', () => {
+    updateStats();
+    userInput.focus();
+  });
+
+  resetBtn.addEventListener('click', () => {
+    updateText();
+    userInput.focus();
+  });
+
+  // Предотвращение удаления символов
+  userInput.addEventListener('keydown', (event) => {
+    // Если нажата клавиша Backspace или Delete
+    if (event.key === 'Backspace' || event.key === 'Delete') {
+      // Получаем текущую длину введенного текста
+      const currentLength = userInput.value.length;
+      
+      // Если пытаемся удалить символ, который уже был введен
+      if (currentLength > 0) {
+        // Предотвращаем удаление
+        event.preventDefault();
+      }
     }
   });
 
-  document.addEventListener("contextmenu", (event) =>
-    event.preventDefault()
-  );
-  document.addEventListener("selectstart", (event) =>
-    event.preventDefault()
-  );
-  document.addEventListener("dragstart", (event) => event.preventDefault());
+  userInput.addEventListener('input', updateStats);
 
-// Находим элементы
-const textToTypeElement = document.getElementById('text-to-type');
-const userInput = document.getElementById('user-input');
-const wpmDisplay = document.getElementById('wpm');
-const accuracyDisplay = document.getElementById('accuracy');
-const startButton = document.getElementById('start-btn');
-const accuracySpan = document.getElementById('accuracy'); // Инициализация accuracySpan
-const wpmSpan = document.getElementById('wpm');
-const difficulty = getDifficultyLevel('difficulty');
+  textToType.addEventListener('click', () => {
+    userInput.focus();
+  });
 
-
-// Переменные для отслеживания состояния
-let startTime, interval;
-let isTestStarted = false;
-let originalText = "";
-
-// Функция для начала теста
-function startTypingTest() {
-    wpmDisplay.textContent = '0';
-    accuracyDisplay.textContent = '100';
-        originalText = generateTextFromWords(); // Generate text without length
-
-    textToTypeElement.innerText = originalText; // Устанавливаем текст для набора
-
-    startTime = new Date();
-    clearInterval(interval);
-    interval = setInterval(updateStats, 1000);
-}
-
-// Функция для обновления статистики
-function updateStats() {
-    const typedText = userInput.value;
-    const totalTyped = typedText.length;
-
-    // Проверяем, что тест уже начался
-    if (!startTime) {
-        return; // Если тест не начался, ничего не делаем
+  // Предотвращение потери фокуса
+  userInput.addEventListener('blur', (event) => {
+    // Проверяем, не кликнули ли мы на select или его опции
+    const relatedTarget = event.relatedTarget;
+    if (relatedTarget && (relatedTarget.tagName === 'SELECT' || relatedTarget.tagName === 'OPTION')) {
+      return;
     }
+    setTimeout(() => userInput.focus(), 0);
+  });
 
-    const elapsedTime = (new Date() - startTime) / 60000; // в минутах
-
-    // Проверяем, что elapsedTime больше 0, чтобы избежать деления на ноль
-    if (elapsedTime > 0) {
-        const wpm = Math.round(totalTyped / elapsedTime);
-        wpmSpan.textContent = wpm;
-    } else {
-        wpmSpan.textContent = '0'; // Если время не прошло, показываем 0
-    }
-
-    let correctChars = 0;
-    for (let i = 0; i < totalTyped; i++) {
-        if (typedText[i] === originalText[i]) {
-            correctChars++;
-        }
-    }
-    const accuracy = Math.round((correctChars / totalTyped) * 100) || 0;
-    accuracyDisplay.textContent = accuracy; // Используем accuracyDisplay
-
-    // Проверка на завершение теста
-    if (typedText.length === originalText.length) {
-        endGame(); // Завершение теста, если длина совпадает
-    }
-}
-
-// Обработчик событий для поля ввода
-userInput.addEventListener('input', function() {
-    const typedText = userInput.value;
-
-    // Ваша существующая логика обновления статистики
-    updateStats();
+  // Инициализация при загрузке
+  userInput.placeholder = "Здесь будет отображаться текст для ввода...";
+  userInput.focus();
 });
 
-// Привязываем обработчики
-startButton.addEventListener('click', startTypingTest);
-
-// Функция для расчета точности
-function calculateAccuracy(inputText, originalText) {
-    let correctChars = 0;
-    const inputChars = inputText.split('');
-    const originalChars = originalText.split('');
-
-    // Сравниваем только введенные символы с оригинальными
-    for (let i = 0; i < inputChars.length; i++) {
-        if (inputChars[i] === originalChars[i]) {
-            correctChars++;
-        }
-    }
-
-    // Учитываем только те символы, которые были введены
-    return Math.round((correctChars / inputChars.length) * 100) || 0; // Избегаем деления на ноль
-}
-
-// Генерация текста из осмысленных слов
-function generateTextFromWords() {
-    let randomText = "";
-    const randomWord = words[Math.floor(Math.random() * words.length)];
-    randomText += randomWord; // Generate a single random word
-    // Делаем первую букву заглавной
-    return randomText.charAt(0).toUpperCase() + randomText.slice(1);
-}
-
-// Установка случайного текста в бокс
-function setRandomText() {
-    const length = parseInt(document.getElementById('text-length').value); // Длина текста в символах
-    const randomText = generateTextFromWords(length); // Генерируем текст из осмысленных слов
-    textToTypeElement.innerText = randomText; // Устанавливаем текст
-}
-// Функция для получения текущего уровня сложности
-function getDifficultyLevel() {
-    // Получаем текущий URL
-    const currentPath = window.location.pathname;
-    
-    // Определяем уровень сложности на основе URL
-    switch (currentPath) {
-        case '/expert':
-            return 'Эксперт';
-        case '/advanced':
-            return 'Продвинутый';
-        case '/intermediate':
-            return 'Обычный';
-        case '/easy':
-            return 'Легкий';
-        default:
-            return 'Обычный';
-    }
-}
-// Функция для получения текущего уровня сложности
-function getDifficultyLevel() {
-    // Получаем текущий URL
-    const currentPath = window.location.pathname;
-    
-    // Определяем уровень сложности на основе URL
-    switch (currentPath) {
-        case '/expert':
-            return 'Эксперт';
-        case '/advanced':
-            return 'Продвинутый';
-        case '/intermediate':
-            return 'Обычный';
-        case '/easy':
-            return 'Легкий';
-        default:
-            return 'Обычный';
-    }
-}
-
-// Завершение теста
-// Завершение теста
-function endTypingTest() {
-    clearInterval(interval);
-    const finalWpm = wpmDisplay.textContent;
-    const finalAccuracy = accuracyDisplay.textContent;
-    const difficulty = getDifficultyLevel();
-    // Кодируем результаты
-    const encodedData = encodeResults(finalWpm, finalAccuracy, difficulty, getCurrentDateTime());
-    
-    // Перенаправляем на страницу результатов
-    window.location.href = `/results?data=${encodedData}`;
-}
-
-// Функция для кодирования результатов
-function encodeResults(wpm, accuracy, difficulty, dateTime) {
-    const data = {
-        wpm: wpm,
-        accuracy: accuracy,
-        difficulty: difficulty,
-        dateTime: dateTime
-    };
-    return btoa(unescape(encodeURIComponent(JSON.stringify(data))));
-}
-
-// Функция для получения текущей даты и времени
-function getCurrentDateTime() {
-    const now = new Date();
-    // Возвращаем ISO строку, которая правильно сортируется
-    return now.toISOString();
-}
-
-// Проверка завершения теста
-userInput.addEventListener('input', () => {
-    const inputText = userInput.value;
-    const originalText = textToTypeElement.innerText;
-
-    // Автозапуск при первом вводе текста
-    if (!isTestStarted) {
-        isTestStarted = true;
-        startTypingTest();
-    }
-
-    const resultHTML = [];
-
-    // Проверяем каждый символ оригинального текста
-    for (let i = 0; i < originalText.length; i++) {
-        if (i < inputText.length) {
-            // Если символ введен, проверяем его
-            if (inputText[i] === originalText[i]) {
-                resultHTML.push(`<span class="correct">${originalText[i]}</span>`); // Правильный символ
-            } else {
-                resultHTML.push(`<span class="incorrect">${originalText[i]}</span>`); // Неправильный символ
-            }
-        } else {
-            // Если символ не введен, показываем оригинальный символ серым
-            resultHTML.push(`<span class="gray">${originalText[i]}</span>`); 
-        }
-    }
-
-    // Обновляем отображение текста
-    textToTypeElement.innerHTML = resultHTML.join('');
-
-    // Проверка на завершение ввода
-    if (inputText.length >= originalText.length) {
-        setTimeout(endTypingTest, 200); // Задержка перед завершением теста
-    }
-
-    // Обновляем статистику
-    updateStats();
+// Защита от инструментов разработчика
+/*
+document.addEventListener('keydown', function (event) {
+  if (event.key === 'F12' || (event.ctrlKey && event.shiftKey && event.key === 'I')) {
+    event.preventDefault();
+    document.getElementById('devtools-banner').style.display = 'block';
+  }
 });
+*/
 
-// Привязываем обработчики
-startButton.addEventListener('click', startTypingTest);
-document.getElementById('generate-btn').addEventListener('click', () => {
-    const randomText = generateTextFromWords(); // Generate random text
-    textToTypeElement.innerText = randomText; // Set the generated text
-});
-
-// Анимации для элементов интерфейса
-window.onload = () => {
-    gsap.from(".typing-game", { opacity: 0, duration: 1.5, y: -100 });
+// Запрет выделения текста
+document.ondragstart = noselect;
+document.onselectstart = noselect;
+document.oncontextmenu = noselect;
+function noselect() {
+  return false;
 }
-
-// Функция для сброса теста
-function resetTypingTest() {
-    userInput.value = ''; // Очищаем поле ввода
-    textToTypeElement.innerText = 'Здесь будет текст для набора'; // Восстанавливаем текст по умолчанию
-    wpmDisplay.textContent = '0'; // Обнуляем WPM
-    accuracyDisplay.textContent = '100'; // Обнуляем точность
-    clearInterval(interval); // Очищаем интервал
-    isTestStarted = false; // Сбрасываем флаг теста
-}
-
-// Привязываем обработчик к кнопке сброса
-document.getElementById('reset-btn').addEventListener('click', resetTypingTest);
-
-document.addEventListener("keydown", (event) => {
-    if (event.key === "Backspace" || event.key === "Delete") {
-        event.preventDefault(); // Блокируем удаление
-    }
-});

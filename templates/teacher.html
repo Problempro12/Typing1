@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель учителя | Результаты учеников</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --light: #f3f4f6;
+            --dark: #1f2937;
+            --gray-100: #f9fafb;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --radius-sm: 0.25rem;
+            --radius: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-full: 9999px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--gray-100);
+            color: var(--gray-800);
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Боковая панель */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 10;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sidebar-logo svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 0.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-item svg {
+            width: 20px;
+            height: 20px;
+            margin-right: 0.75rem;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-radius: var(--radius);
+            background-color: rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .user-profile:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.75rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        /* Основной контент */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 2rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .page-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            font-weight: 500;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            gap: 0.5rem;
+        }
+
+        .btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--gray-300);
+            color: var(--gray-700);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--gray-100);
+            border-color: var(--gray-400);
+        }
+
+        /* Индикатор загрузки */
+        .loading-indicator {
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--gray-500);
+            font-size: 0.875rem;
+        }
+
+        .loading-indicator.active {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--gray-300);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Статистика */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: white;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--gray-500);
+        }
+
+        .stat-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-icon.blue {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--info);
+        }
+
+        .stat-icon.green {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .stat-icon.purple {
+            background-color: rgba(139, 92, 246, 0.1);
+            color: var(--secondary);
+        }
+
+        .stat-icon.orange {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .stat-value {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-description {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+
+        /* Фильтры */
+        .filters-card {
+            background-color: white;
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .filters-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .filters-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--gray-500);
+            margin-bottom: 0.5rem;
+        }
+
+        .filter-select {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius);
+            background-color: white;
+            font-size: 0.875rem;
+            color: var(--gray-700);
+            transition: all 0.2s;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Таблица */
+        .table-card {
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: var(--gray-100);
+            color: var(--gray-600);
+            font-weight: 500;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-200);
+            color: var(--gray-700);
+            font-size: 0.875rem;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: var(--gray-50);
+        }
+
+        .student-name {
+            font-weight: 500;
+            color: var(--gray-900);
+        }
+
+        .difficulty-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .difficulty-easy {
+            background-color: #c6f6d5;
+            color: #22543d;
+        }
+
+        .difficulty-normal {
+            background-color: #fefcbf;
+            color: #744210;
+        }
+
+        .difficulty-advanced {
+            background-color: #fed7d7;
+            color: #822727;
+        }
+
+        .difficulty-expert {
+            background-color: #e9d8fd;
+            color: #44337a;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--gray-500);
+            font-size: 0.875rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .empty-icon {
+            width: 48px;
+            height: 48px;
+            color: var(--gray-400);
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* Мобильная навигация */
+        .mobile-nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--gray-700);
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .mobile-nav-toggle {
+                display: block;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .page-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        /* Кнопка удаления в таблице */
+        .delete-btn {
+            padding: 0.4rem;
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .delete-btn:hover {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        .delete-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Боковая панель -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    KpitTyping
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    Статистика
+                </a>
+                <a href="/" class="nav-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    Тестирование
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-profile" onclick="logout()">
+                    <div class="user-avatar">У</div>
+                    <div class="user-info">
+                        <div class="user-name">Учитель</div>
+                        <div class="user-role">Администратор</div>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Основной контент -->
+        <main class="main-content">
+            <button class="mobile-nav-toggle" id="mobile-nav-toggle">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="24" height="24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+
+            <div class="page-header">
+                <h1 class="page-title">Панель управления</h1>
+                <div class="page-actions">
+                    <div class="loading-indicator" id="loading-indicator">
+                        <div class="loading-spinner"></div>
+                        <span>Обновление данных...</span>
+                    </div>
+                    <button class="btn btn-outline" onclick="refreshData()">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Обновить
+                    </button>
+                    <button class="btn btn-danger" onclick="clearScores()">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Очистить результаты
+                    </button>
+                </div>
+            </div>
+
+            <!-- Статистика -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-title">Всего тестов</div>
+                        <div class="stat-icon blue">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="total-tests">0</div>
+                    <div class="stat-description">Общее количество пройденных тестов</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-title">Средняя скорость</div>
+                        <div class="stat-icon green">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="avg-wpm">0</div>
+                    <div class="stat-description">Средняя скорость в CPM</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-title">Средняя точность</div>
+                        <div class="stat-icon purple">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="avg-accuracy">0%</div>
+                    <div class="stat-description">Средняя точность ввода</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-title">Лучшая скорость</div>
+                        <div class="stat-icon orange">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="best-wpm">0</div>
+                    <div class="stat-description">Максимальная скорость в CPM</div>
+                </div>
+            </div>
+
+            <!-- Фильтры -->
+            <div class="filters-card">
+                <div class="filters-header">
+                    <h2 class="filters-title">Фильтры и сортировка</h2>
+                </div>
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label for="difficultyFilter" class="filter-label">Уровень сложности</label>
+                        <select id="difficultyFilter" class="filter-select">
+                            <option value="all">Все уровни</option>
+                            <option value="Легкий">Легкий</option>
+                            <option value="Нормальный">Нормальный</option>
+                            <option value="Продвинутый">Продвинутый</option>
+                            <option value="Эксперт">Эксперт</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="sortBy" class="filter-label">Сортировка</label>
+                        <select id="sortBy" class="filter-select">
+                            <option value="date">По дате (новые)</option>
+                            <option value="wpm">По скорости (высокие)</option>
+                            <option value="accuracy">По точности (высокие)</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="sortOrder" class="filter-label">Порядок</label>
+                        <select id="sortOrder" class="filter-select">
+                            <option value="desc">По убыванию</option>
+                            <option value="asc">По возрастанию</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Таблица результатов -->
+            <div class="table-card">
+                <div class="table-header">
+                    <h2 class="table-title">Результаты учеников</h2>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Фамилия</th>
+                                <th>Скорость (CPM)</th>
+                                <th>Точность (%)</th>
+                                <th>Сложность</th>
+                                <th>Дата</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="all-scores-table">
+                            <!-- Здесь будут отображаться результаты -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Проверка авторизации
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/check-auth', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    window.location.href = '/login';
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                console.error('Ошибка при проверке авторизации:', error);
+                window.location.href = '/login';
+                return false;
+            }
+        }
+
+        // Функция выхода
+        async function logout() {
+            try {
+                await fetch('/api/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+            } catch (error) {
+                console.error('Ошибка при выходе:', error);
+            }
+            window.location.href = '/login';
+        }
+
+        // Мобильная навигация
+        document.getElementById('mobile-nav-toggle').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('active');
+        });
+
+        // Обновление данных
+        function refreshData() {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            loadingIndicator.classList.add('active');
+            
+            loadAllScores().finally(() => {
+                loadingIndicator.classList.remove('active');
+            });
+        }
+
+        let currentScores = [];
+        let autoRefreshInterval;
+
+        // Загрузка всех результатов
+        async function loadAllScores() {
+            try {
+                const response = await fetch('/api/all-scores', {
+                    credentials: 'include'
+                });
+                
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                const scores = await response.json();
+                // Фильтруем только сохраненные результаты
+                const savedScores = scores.filter(score => score.saved === true);
+                
+                // Проверяем, изменились ли данные
+                if (JSON.stringify(currentScores) !== JSON.stringify(savedScores)) {
+                    currentScores = savedScores;
+                    displayFilteredScores();
+                    updateStats();
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки результатов:', error);
+            }
+        }
+
+        // Обновление статистики
+        function updateStats() {
+            if (currentScores.length === 0) {
+                document.getElementById('total-tests').textContent = '0';
+                document.getElementById('avg-wpm').textContent = '0';
+                document.getElementById('avg-accuracy').textContent = '0%';
+                document.getElementById('best-wpm').textContent = '0';
+                return;
+            }
+            
+            // Общее количество тестов
+            document.getElementById('total-tests').textContent = currentScores.length;
+            
+            // Средняя скорость
+            const totalWpm = currentScores.reduce((sum, score) => sum + parseInt(score.wpm), 0);
+            const avgWpm = Math.round(totalWpm / currentScores.length);
+            document.getElementById('avg-wpm').textContent = avgWpm;
+            
+            // Средняя точность
+            const totalAccuracy = currentScores.reduce((sum, score) => sum + parseInt(score.accuracy), 0);
+            const avgAccuracy = Math.round(totalAccuracy / currentScores.length);
+            document.getElementById('avg-accuracy').textContent = `${avgAccuracy}%`;
+            
+            // Лучшая скорость
+            const bestWpm = Math.max(...currentScores.map(score => parseInt(score.wpm)));
+            document.getElementById('best-wpm').textContent = bestWpm;
+        }
+
+        // Функция очистки результатов
+        async function clearScores() {
+            if (!confirm('Вы уверены, что хотите очистить все результаты? Это действие нельзя отменить.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/clear-scores', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                if (data.success) {
+                    alert('Все результаты успешно очищены');
+                    currentScores = [];
+                    displayFilteredScores();
+                    updateStats();
+                } else {
+                    alert(data.message || 'Ошибка при очистке результатов');
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Ошибка при очистке результатов');
+            }
+        }
+
+        // Функция удаления отдельного результата
+        async function deleteScore(scoreId) {
+            if (!confirm('Вы уверены, что хотите удалить этот результат?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/delete-score/${scoreId}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                if (data.success) {
+                    // Удаляем результат из текущего массива
+                    currentScores = currentScores.filter(score => score.id !== scoreId);
+                    displayFilteredScores();
+                    updateStats();
+                } else {
+                    alert(data.message || 'Ошибка при удалении результата');
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Ошибка при удалении результата');
+            }
+        }
+
+        // Отображение отфильтрованных результатов
+        function displayFilteredScores() {
+            const difficultyFilter = document.getElementById('difficultyFilter').value;
+            const sortBy = document.getElementById('sortBy').value;
+            const sortOrder = document.getElementById('sortOrder').value;
+            
+            let filteredScores = [...currentScores];
+            
+            if (difficultyFilter !== 'all') {
+                filteredScores = filteredScores.filter(score => score.difficulty === difficultyFilter);
+            }
+            
+            filteredScores.sort((a, b) => {
+                let comparison = 0;
+                
+                switch (sortBy) {
+                    case 'date':
+                        comparison = new Date(b.dateTime) - new Date(a.dateTime);
+                        break;
+                    case 'wpm':
+                        comparison = parseFloat(b.wpm) - parseFloat(a.wpm);
+                        break;
+                    case 'accuracy':
+                        comparison = parseFloat(b.accuracy) - parseFloat(a.accuracy);
+                        break;
+                    case 'difficulty':
+                        const difficultyWeight = {
+                            'Эксперт': 4,
+                            'Продвинутый': 3,
+                            'Нормальный': 2,
+                            'Легкий': 1
+                        };
+                        comparison = difficultyWeight[b.difficulty] - difficultyWeight[a.difficulty];
+                        break;
+                }
+                
+                return sortOrder === 'asc' ? -comparison : comparison;
+            });
+            
+            const tableBody = document.getElementById('all-scores-table');
+            tableBody.innerHTML = '';
+            
+            if (filteredScores.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-message">
+                                <svg class="empty-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Нет результатов для отображения</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            filteredScores.forEach((score, index) => {
+                const row = document.createElement('tr');
+                
+                // Определяем класс для бейджа сложности
+                let difficultyClass = '';
+                switch (score.difficulty) {
+                    case 'Легкий':
+                        difficultyClass = 'difficulty-easy';
+                        break;
+                    case 'Нормальный':
+                        difficultyClass = 'difficulty-normal';
+                        break;
+                    case 'Продвинутый':
+                        difficultyClass = 'difficulty-advanced';
+                        break;
+                    case 'Эксперт':
+                        difficultyClass = 'difficulty-expert';
+                        break;
+                }
+                
+                row.innerHTML = `
+                    <td class="student-name">${score.studentName || 'Аноним'}</td>
+                    <td>${score.wpm}</td>
+                    <td>${score.accuracy}%</td>
+                    <td><span class="difficulty-badge ${difficultyClass}">${score.difficulty}</span></td>
+                    <td>${formatDateTime(score.dateTime)}</td>
+                    <td>
+                        <button class="delete-btn" onclick="deleteScore('${score.id}')" title="Удалить результат">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Функция форматирования даты
+        function formatDateTime(isoString) {
+            try {
+                const date = new Date(isoString);
+                if (isNaN(date)) return isoString;
+                
+                const day = date.getDate().toString().padStart(2, '0');
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const hours = date.getHours().toString().padStart(2, '0');
+                const minutes = date.getMinutes().toString().padStart(2, '0');
+                const seconds = date.getSeconds().toString().padStart(2, '0');
+                return `${day}/${month} ${hours}:${minutes}:${seconds}`;
+            } catch (e) {
+                return isoString;
+            }
+        }
+
+        // Обработчики событий
+        document.getElementById('difficultyFilter').addEventListener('change', displayFilteredScores);
+        document.getElementById('sortBy').addEventListener('change', displayFilteredScores);
+        document.getElementById('sortOrder').addEventListener('change', displayFilteredScores);
+
+        // Загрузка результатов при загрузке страницы
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (await checkAuth()) {
+                await loadAllScores();
+                // Запускаем автоматическое обновление каждые 30 секунд
+                autoRefreshInterval = setInterval(loadAllScores, 30000);
+            }
+        });
+
+        // Очищаем интервал при выходе из страницы
+        window.addEventListener('beforeunload', function() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+            }
+        });
+    </script>
+</body>
+</html> 

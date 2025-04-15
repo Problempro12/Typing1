@@ -1,65 +1,18 @@
 [
   {
-    "name": "Супербой",
-    "wpm": "168",
-    "accuracy": "97",
-    "difficulty": "Эксперт",
-    "dateTime": "21/02 10:12"
-  },
-  {
-    "name": "dev",
-    "wpm": "300",
-    "accuracy": "99",
-    "difficulty": "Продвинутый",
-    "dateTime": "21/02 09:00"
-  },
-  {
-    "name": "123",
-    "wpm": "279",
-    "accuracy": "96",
-    "difficulty": "Продвинутый",
-    "dateTime": "21/02 09:32"
-  },
-  {
-    "name": "Даша",
-    "wpm": "420",
-    "accuracy": "0",
-    "difficulty": "Обычный",
-    "dateTime": "21/02 09:25"
-  },
-  {
-    "name": "Костя",
-    "wpm": "228",
-    "accuracy": "100",
-    "difficulty": "Обычный",
-    "dateTime": "21/02 09:06"
-  },
-  {
-    "name": "Варя",
-    "wpm": "180",
-    "accuracy": "33",
-    "difficulty": "Обычный",
-    "dateTime": "21/02 15:09"
-  },
-  {
-    "name": "Лох",
-    "wpm": "100",
-    "accuracy": "17",
-    "difficulty": "Обычный",
-    "dateTime": "21/02 08:58"
-  },
-  {
-    "name": "Саня",
-    "wpm": "242",
-    "accuracy": "100",
+    "wpm": 258,
+    "accuracy": 98,
     "difficulty": "Легкий",
-    "dateTime": "21/02 08:51"
+    "dateTime": "2025-04-14T17:03:02.672Z",
+    "saved": true,
+    "studentName": "Егор"
   },
   {
-    "name": "дашашаашаша",
-    "wpm": "132",
-    "accuracy": "78",
-    "difficulty": "Легкий",
-    "dateTime": "27/02 11:17:52"
+    "wpm": 294,
+    "accuracy": 92,
+    "difficulty": "Нормальный",
+    "dateTime": "2025-04-13T20:57:56.037Z",
+    "saved": true,
+    "studentName": "никитка"
   }
 ]

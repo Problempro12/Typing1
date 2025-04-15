@@ -3,214 +3,558 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Таблица лидеров</title>
-    <link rel="stylesheet" href="/static/public.css"/>
+    <title>KpitTyping | Таблица лидеров</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #302b35;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .overflow-y-auto::-webkit-scrollbar {
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            min-height: 100vh;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(79, 70, 229, 0.05) 0%, transparent 50%);
+            animation: rotate 60s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .leaderboard-container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            height: calc(100vh - 4rem);
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(99, 102, 241, 0.1);
+        }
+
+        header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: #64748b;
+            font-size: 1.1rem;
+        }
+
+        .difficulty-selector {
+            margin-bottom: 2rem;
+        }
+
+        .table-container {
+            flex: 1;
+            min-height: 0;
+            overflow: auto;
+            border-radius: 8px;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .leaderboard-table th {
+            background: #f8fafc;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #64748b;
+            border-bottom: 2px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .leaderboard-table th:hover {
+            background: #f1f5f9;
+        }
+
+        .sort-icon {
+            display: inline-block;
+            margin-left: 4px;
+            transition: transform 0.2s;
+        }
+
+        .sort-icon.asc {
+            transform: rotate(180deg);
+        }
+
+        .sort-active {
+            color: #6366f1;
+        }
+
+        .leaderboard-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #64748b;
+        }
+
+        .leaderboard-table tr:hover {
+            background: rgba(79, 70, 229, 0.05);
+        }
+
+        .leaderboard-table tr:nth-child(1) {
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .leaderboard-table tr:nth-child(2) {
+            background: rgba(192, 192, 192, 0.1);
+        }
+
+        .leaderboard-table tr:nth-child(3) {
+            background: rgba(205, 127, 50, 0.1);
+        }
+
+        .table-container::-webkit-scrollbar {
             width: 8px;
         }
-        
-        .overflow-y-auto::-webkit-scrollbar-track {
-            background: rgba(139, 92, 246, 0.1);
+
+        .table-container::-webkit-scrollbar-track {
+            background: #f1f5f9;
             border-radius: 4px;
         }
-        
-        .overflow-y-auto::-webkit-scrollbar-thumb {
-            background: rgba(139, 92, 246, 0.3);
+
+        .table-container::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
             border-radius: 4px;
         }
-        
-        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-            background: rgba(139, 92, 246, 0.5);
+
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .difficulty-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+            color: #64748b;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .difficulty-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .difficulty-btn.active {
+            background: linear-gradient(90deg, #6366f1, #4f46e5);
+            color: white;
+        }
+
+        .difficulty-btn.easy {
+            color: #10b981;
+        }
+
+        .difficulty-btn.easy:hover, .difficulty-btn.easy.active {
+            background: linear-gradient(90deg, #10b981, #059669);
+            color: white;
+        }
+
+        .difficulty-btn.normal {
+            color: #6366f1;
+        }
+
+        .difficulty-btn.normal:hover, .difficulty-btn.normal.active {
+            background: linear-gradient(90deg, #6366f1, #4f46e5);
+            color: white;
+        }
+
+        .difficulty-btn.advanced {
+            color: #8a2be2;
+        }
+
+        .difficulty-btn.advanced:hover, .difficulty-btn.advanced.active {
+            background: linear-gradient(90deg, #8a2be2, #6a0dad);
+            color: white;
+        }
+
+        .difficulty-btn.expert {
+            color: #ef4444;
+        }
+
+        .difficulty-btn.expert:hover, .difficulty-btn.expert.active {
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .wpm {
+            font-weight: 600;
+            color: #6366f1;
+        }
+
+        .accuracy {
+            font-weight: 600;
+            color: #10b981;
+        }
+
+        .difficulty {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .difficulty.easy {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .difficulty.normal {
+            background: rgba(99, 102, 241, 0.1);
+            color: #6366f1;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .difficulty.advanced {
+            background: rgba(138, 43, 226, 0.1);
+            color: #8a2be2;
+            border: 1px solid rgba(138, 43, 226, 0.2);
+        }
+
+        .difficulty.expert {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .date {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .medal {
+            display: inline-block;
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .medal-gold {
+            color: #fbbf24;
+        }
+
+        .medal-silver {
+            color: #94a3b8;
+        }
+
+        .medal-bronze {
+            color: #d97706;
+        }
+
+        #home-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: linear-gradient(90deg, #6366f1, #4f46e5);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            font-weight: 500;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        #home-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        #home-btn i {
+            font-size: 1.1rem;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 2rem;
+            color: #64748b;
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 768px) {
+            .leaderboard-container {
+                margin: 1rem;
+                padding: 1rem;
+                height: calc(100vh - 2rem);
+            }
+
+            .difficulty-selector {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .difficulty-btn {
+                width: 100%;
+            }
+
+            .leaderboard-table {
+                font-size: 0.9rem;
+            }
+
+            .leaderboard-table th, .leaderboard-table td {
+                padding: 0.75rem;
+            }
+
+            header h1 {
+                font-size: 1.75rem;
+            }
         }
     </style>
 </head>
-<body class="bg-[#302b35] text-white">
-    <h1 class="text-3xl md:text-5xl bg-violet-700/20 py-3 text-violet-300 mb-4 text-center mx-2 rounded-b-2xl shadow-md shadow-violet-800/30">
-        Таблица лидеров
-    </h1>
+<body>
+    <div class="leaderboard-container">
+        <header>
+            <h1>Таблица лидеров</h1>
+            <p>Лучшие результаты по скорости печати</p>
+        </header>
 
-    <div class="max-w-4xl mx-auto p-4">
-        <!-- Фильтры и сортировка -->
-        <div class="filters border-2 border-violet-900 rounded-lg p-4 mb-4">
-            <div class="flex flex-wrap gap-4 justify-center">
-                <div class="filter-group">
-                    <label class="mr-2">Сложность:</label>
-                    <select id="difficulty-filter" 
-                            class="bg-zinc-800 border-2 border-violet-900 rounded px-2 py-1">
-                        <option value="all">Все</option>
-                        <option value="Легкий">Легкий</option>
-                        <option value="Обычный">Обычный</option>
-                        <option value="Продвинутый">Продвинутый</option>
-                        <option value="Эксперт">Эксперт</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label class="mr-2">Сортировка:</label>
-                    <select id="sort-by" 
-                            class="bg-zinc-800 border-2 border-violet-900 rounded px-2 py-1">
-                        <option value="wpm">По скорости</option>
-                        <option value="accuracy">По точности</option>
-                        <option value="date">По дате</option>
-                    </select>
-                </div>
-            </div>
+        <div class="difficulty-selector">
+            <button class="difficulty-btn active" data-difficulty="all">Все уровни</button>
+            <button class="difficulty-btn easy" data-difficulty="Начальный">Начальный</button>
+            <button class="difficulty-btn normal" data-difficulty="Нормальный">Нормальный</button>
+            <button class="difficulty-btn advanced" data-difficulty="Продвинутый">Продвинутый</button>
+            <button class="difficulty-btn expert" data-difficulty="Экспертный">Экспертный</button>
         </div>
 
-        <div class="high-scores border-2 border-violet-900 rounded-lg p-4">
-            <div class="overflow-x-auto overflow-y-auto" style="max-height: 300px;">
-                <table class="w-full">
-                    <thead>
-                        <tr class="border-b border-violet-800 sticky top-0 bg-[#302b35]">
-                            <th class="p-2">Место</th>
-                            <th class="p-2">Имя</th>
-                            <th class="p-2">Скорость</th>
-                            <th class="p-2">Точность</th>
-                            <th class="p-2">Сложность</th>
-                            <th class="p-2">Дата</th>
-                        </tr>
-                    </thead>
-                    <tbody id="high-scores-table">
-                        <!-- Здесь будут отображаться рекорды -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <div class="text-center mt-8">
-            <a href="/" class="bg-violet-900/50 hover:bg-violet-800/50 rounded-lg p-3 mt-3">
-                На главную
-            </a>
+        <div class="table-container">
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th data-sort="rank">Место <span class="sort-icon">↓</span></th>
+                        <th data-sort="name">Имя <span class="sort-icon">↓</span></th>
+                        <th data-sort="wpm">Скорость (CPM) <span class="sort-icon">↓</span></th>
+                        <th data-sort="accuracy">Точность (%) <span class="sort-icon">↓</span></th>
+                        <th data-sort="difficulty">Уровень <span class="sort-icon">↓</span></th>
+                        <th data-sort="date">Дата <span class="sort-icon">↓</span></th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <!-- Здесь будут отображаться результаты -->
+                </tbody>
+            </table>
         </div>
     </div>
 
+    <a href="/" id="home-btn">
+        <i class="fas fa-home"></i>
+        На главную
+    </a>
+
     <script>
-    function getDifficultyClass(difficulty) {
-        switch (difficulty) {
-            case 'Эксперт':
-                return 'bg-red-900/50 text-red-200';
-            case 'Продвинутый':
-                return 'bg-orange-900/50 text-orange-200';
-            case 'Обычный':
-                return 'bg-yellow-900/50 text-yellow-200';
-            case 'Легкий':
-                return 'bg-green-900/50 text-green-200';
-            default:
-                return 'bg-gray-900/50 text-gray-200';
-        }
-    }
+        document.addEventListener("DOMContentLoaded", () => {
+            const leaderboardBody = document.getElementById("leaderboard-body");
+            const difficultyButtons = document.querySelectorAll(".difficulty-btn");
+            let allScores = [];
+            let currentSort = {
+                column: 'wpm',
+                direction: 'desc'
+            };
 
-    let currentScores = [];
-    
-    async function loadScores() {
-        try {
-            const response = await fetch('/api/scores');
-            const scores = await response.json();
-            currentScores = scores;
-            if (!currentScores || currentScores.length === 0) {
-                const tableBody = document.getElementById('high-scores-table');
-                tableBody.innerHTML = `
-                    <tr class="border-b border-violet-800/30">
-                        <td colspan="6" class="p-4 text-center text-gray-400">
-                            Пока нет результатов
-                        </td>
-                    </tr>
-                `;
-                return;
+            // Загрузка результатов
+            async function loadScores() {
+                try {
+                    const response = await fetch("/api/scores");
+                    allScores = await response.json();
+                    displayScores("all");
+                } catch (error) {
+                    console.error("Ошибка при загрузке результатов:", error);
+                    leaderboardBody.innerHTML = "<tr><td colspan='6' class='no-results'>Не удалось загрузить результаты</td></tr>";
+                }
             }
-            displayFilteredScores();
-        } catch (error) {
-            console.error('Ошибка загрузки результатов:', error);
-            const tableBody = document.getElementById('high-scores-table');
-            tableBody.innerHTML = `
-                <tr class="border-b border-violet-800/30">
-                    <td colspan="6" class="p-4 text-center text-red-400">
-                        Ошибка загрузки результатов
-                    </td>
-                </tr>
-            `;
-        }
-    }
 
-    function displayFilteredScores() {
-        const difficultyFilter = document.getElementById('difficulty-filter').value;
-        const sortBy = document.getElementById('sort-by').value;
-        
-        let filteredScores = [...currentScores];
-        
-        if (difficultyFilter !== 'all') {
-            filteredScores = filteredScores.filter(score => score.difficulty === difficultyFilter);
-        }
-        
-        filteredScores.sort((a, b) => {
-            switch (sortBy) {
-                case 'wpm':
-                    return parseInt(b.wpm) - parseInt(a.wpm);
-                case 'accuracy':
-                    return parseInt(b.accuracy) - parseInt(a.accuracy);
-                case 'date':
-                    return new Date(b.dateTime) - new Date(a.dateTime);
-                default:
-                    return 0;
+            // Фильтрация результатов по уровню сложности
+            function filterScores(difficulty) {
+                // Сначала фильтруем по saved
+                const savedScores = allScores.filter(score => score.saved === true);
+                
+                if (difficulty === "all") {
+                    return savedScores;
+                }
+                return savedScores.filter(score => score.difficulty === difficulty);
             }
+
+            // Получение класса для уровня сложности
+            function getDifficultyClass(difficulty) {
+                switch (difficulty) {
+                    case "Начальный":
+                    case "Легкий":
+                        return "easy";
+                    case "Нормальный":
+                        return "normal";
+                    case "Продвинутый":
+                        return "advanced";
+                    case "Экспертный":
+                    case "Эксперт":
+                        return "expert";
+                    default:
+                        return "";
+                }
+            }
+
+            // Сортировка результатов
+            function sortScores(scores, column, direction) {
+                return scores.sort((a, b) => {
+                    let comparison = 0;
+                    
+                    switch (column) {
+                        case 'rank':
+                            comparison = 0; // Ранк уже определен порядком
+                            break;
+                        case 'name':
+                            comparison = (a.studentName || 'Аноним').localeCompare(b.studentName || 'Аноним');
+                            break;
+                        case 'wpm':
+                            comparison = parseFloat(a.wpm) - parseFloat(b.wpm);
+                            break;
+                        case 'accuracy':
+                            comparison = parseFloat(a.accuracy) - parseFloat(b.accuracy);
+                            break;
+                        case 'difficulty':
+                            const difficultyWeight = {
+                                'Экспертный': 4,
+                                'Продвинутый': 3,
+                                'Нормальный': 2,
+                                'Начальный': 1
+                            };
+                            comparison = (difficultyWeight[a.difficulty] || 0) - (difficultyWeight[b.difficulty] || 0);
+                            break;
+                        case 'date':
+                            comparison = new Date(a.dateTime) - new Date(b.dateTime);
+                            break;
+                    }
+                    
+                    return direction === 'asc' ? comparison : -comparison;
+                });
+            }
+
+            // Обработчик клика по заголовку для сортировки
+            document.querySelectorAll('.leaderboard-table th').forEach(header => {
+                header.addEventListener('click', () => {
+                    const column = header.dataset.sort;
+                    const direction = currentSort.column === column && currentSort.direction === 'desc' ? 'asc' : 'desc';
+                    
+                    // Обновляем иконки сортировки
+                    document.querySelectorAll('.leaderboard-table th').forEach(th => {
+                        th.classList.remove('sort-active');
+                        th.querySelector('.sort-icon').classList.remove('asc');
+                    });
+                    
+                    header.classList.add('sort-active');
+                    if (direction === 'asc') {
+                        header.querySelector('.sort-icon').classList.add('asc');
+                    }
+                    
+                    currentSort = { column, direction };
+                    displayScores(document.querySelector('.difficulty-btn.active').dataset.difficulty);
+                });
+            });
+
+            // Отображение результатов
+            function displayScores(difficulty) {
+                const filteredScores = filterScores(difficulty);
+                const sortedScores = sortScores(filteredScores, currentSort.column, currentSort.direction);
+                
+                if (sortedScores.length === 0) {
+                    leaderboardBody.innerHTML = "<tr><td colspan='6' class='no-results'>Нет результатов для этого уровня</td></tr>";
+                    return;
+                }
+
+                leaderboardBody.innerHTML = sortedScores.map((score, index) => {
+                    const difficultyClass = getDifficultyClass(score.difficulty);
+                    const date = new Date(score.dateTime);
+                    const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+                    
+                    let medalHtml = '';
+                    if (index === 0) {
+                        medalHtml = '<span class="medal medal-gold"><i class="fas fa-medal"></i></span>';
+                    } else if (index === 1) {
+                        medalHtml = '<span class="medal medal-silver"><i class="fas fa-medal"></i></span>';
+                    } else if (index === 2) {
+                        medalHtml = '<span class="medal medal-bronze"><i class="fas fa-medal"></i></span>';
+                    }
+                    
+                    return `
+                        <tr>
+                            <td>${medalHtml}${index + 1}</td>
+                            <td>${score.studentName || 'Аноним'}</td>
+                            <td class="wpm">${score.wpm}</td>
+                            <td class="accuracy">${score.accuracy}</td>
+                            <td><span class="difficulty ${difficultyClass}">${score.difficulty}</span></td>
+                            <td class="date">${formattedDate}</td>
+                        </tr>
+                    `;
+                }).join("");
+            }
+
+            // Обработчики событий для кнопок выбора уровня сложности
+            difficultyButtons.forEach(button => {
+                button.addEventListener("click", () => {
+                    difficultyButtons.forEach(btn => btn.classList.remove("active"));
+                    button.classList.add("active");
+                    const difficulty = button.getAttribute("data-difficulty");
+                    displayScores(difficulty);
+                });
+            });
+
+            // Загрузка результатов при загрузке страницы
+            loadScores();
         });
-        
-        const tableBody = document.getElementById('high-scores-table');
-        if (!filteredScores.length) {
-            tableBody.innerHTML = `
-                <tr class="border-b border-violet-800/30">
-                    <td colspan="6" class="p-4 text-center text-gray-400">
-                        Нет результатов для выбранного фильтра
-                    </td>
-                </tr>
-            `;
-            return;
-        }
-        
-        tableBody.innerHTML = filteredScores.map((score, index) => `
-            <tr class="border-b border-violet-800/30 ${index === 0 ? 'bg-violet-900/30' : ''}">
-                <td class="p-2">${index + 1}</td>
-                <td class="p-2">${score.name}</td>
-                <td class="p-2">${score.wpm}</td>
-                <td class="p-2">${score.accuracy}%</td>
-                <td class="p-2">
-                    <span class="px-2 py-1 rounded-full text-sm ${getDifficultyClass(score.difficulty)}">
-                        ${score.difficulty}
-                    </span>
-                </td>
-                <td class="p-2">${formatDateTime(score.dateTime)}</td>
-            </tr>
-        `).join('');
-    }
-
-    // Функция форматирования даты для отображения
-    function formatDateTime(isoString) {
-        try {
-            const date = new Date(isoString);
-            if (isNaN(date)) return isoString;
-            
-            const day = date.getDate().toString().padStart(2, '0');
-            const month = (date.getMonth() + 1).toString().padStart(2, '0');
-            const hours = date.getHours().toString().padStart(2, '0');
-            const minutes = date.getMinutes().toString().padStart(2, '0');
-            const seconds = date.getSeconds().toString().padStart(2, '0');
-            return `${day}/${month} ${hours}:${minutes}:${seconds}`;
-        } catch (e) {
-            return isoString;
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        loadScores();
-        // Добавляем обработчики событий для фильтров
-        document.getElementById('difficulty-filter').addEventListener('change', displayFilteredScores);
-        document.getElementById('sort-by').addEventListener('change', displayFilteredScores);
-    });
     </script>
 </body>
 </html>

@@ -3,305 +3,537 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Тренажёр скорости печати</title>
-    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" /> -->
-    <script src="{{ url_for('static', filename='words-advenced.js') }}"></script>
-    <!-- Подключаем words.js -->
-    <link
-    rel="stylesheet"
-    href="/static/public.css"
-  />
+    <title>KpitTyping | Продвинутый уровень</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   </head>
   <body>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Montserrat', sans-serif;
+        min-height: 100vh;
+        background: #f8fafc;
+        color: #1e293b;
+        line-height: 1.6;
+        position: relative;
+        overflow: hidden;
+      }
+
+      body::before {
+        content: '';
+        position: fixed;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: 
+          radial-gradient(circle at 20% 20%, rgba(138, 43, 226, 0.05) 0%, transparent 50%),
+          radial-gradient(circle at 80% 80%, rgba(106, 13, 173, 0.05) 0%, transparent 50%);
+        animation: rotate 60s linear infinite;
+        z-index: 0;
+      }
+
+      @keyframes rotate {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      .typing-game {
+        max-width: 1000px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        position: relative;
+        z-index: 1;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid rgba(138, 43, 226, 0.1);
+      }
+
+      header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+      }
+
+      header p {
+        color: #64748b;
+        font-size: 1.1rem;
+      }
+
+      .controls {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background: #f8fafc;
+        border-radius: 12px;
+      }
+
+      .controls label {
+        font-weight: 500;
+        color: #64748b;
+      }
+
+      select, button, .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: white;
+        color: #64748b;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        text-decoration: none;
+      }
+
+      button:hover, .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        color: #8a2be2;
+      }
+
+      #generate-btn, #start-btn {
+        background: linear-gradient(90deg, #8a2be2, #6a0dad);
+        color: white;
+      }
+
+      #generate-btn:hover, #start-btn:hover {
+        box-shadow: 0 0 15px rgba(138, 43, 226, 0.3);
+      }
+
+      .game-area {
+        margin-bottom: 2rem;
+      }
+
+      #text-to-type {
+        padding: 1.5rem;
+        background: #f8fafc;
+        border-radius: 12px;
+        font-size: 1.25rem;
+        line-height: 2;
+        margin-bottom: 1rem;
+        color: #64748b;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        letter-spacing: 0.5px;
+        min-height: 150px;
+        position: relative;
+        user-select: none;
+      }
+
+      #user-input {
+        position: absolute;
+        opacity: 0;
+        height: 0;
+        width: 0;
+      }
+
+      .char {
+        display: inline-block;
+        position: relative;
+        transition: color 0.2s;
+      }
+
+      .char.active {
+        animation: blink 1s infinite;
+        color: #8a2be2;
+        font-weight: 600;
+        text-decoration: underline;
+      }
+
+      .char.correct {
+        color: #8a2be2;
+      }
+
+      .char.incorrect {
+        color: #ef4444;
+        text-decoration: underline wavy #ef4444;
+      }
+
+      @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+
+      .stats {
+        display: flex;
+        gap: 2rem;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background: #f8fafc;
+        border-radius: 12px;
+        flex-wrap: wrap;
+      }
+
+      .stats p {
+        font-size: 1.1rem;
+        color: #64748b;
+      }
+
+      .stats span {
+        font-weight: 600;
+        color: #8a2be2;
+        font-size: 1.2rem;
+      }
+
+      #home-btn {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        background: linear-gradient(90deg, #8a2be2, #6a0dad);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+        font-weight: 500;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+      }
+
+      #home-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      #home-btn i {
+        font-size: 1.1rem;
+      }
+
+      #devtools-banner {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.95);
+        color: white;
+        font-size: 2em;
+        text-align: center;
+        line-height: 100vh;
+        z-index: 9999;
+        font-family: 'Montserrat', sans-serif;
+      }
+
+      .level-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: rgba(138, 43, 226, 0.1);
+        border-radius: 9999px;
+        color: #8a2be2;
+        font-weight: 500;
+        margin-bottom: 1rem;
+      }
+
+      .hint {
+        background: rgba(138, 43, 226, 0.05);
+        border: 1px solid rgba(138, 43, 226, 0.1);
+        padding: 1rem;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        color: #64748b;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .hint i {
+        color: #8a2be2;
+        font-size: 1.2rem;
+      }
+
+      @media (max-width: 768px) {
+        .typing-game {
+          margin: 1rem;
+          padding: 1rem;
+        }
+
+        .controls {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .controls > * {
+          width: 100%;
+        }
+
+        .stats {
+          flex-direction: column;
+          align-items: stretch;
+          text-align: center;
+        }
+
+        header h1 {
+          font-size: 1.75rem;
+        }
+
+        #text-to-type, #user-input {
+          font-size: 1.1rem;
+        }
+      }
+
+      .char.space {
+        position: relative;
+      }
+      
+      .char.space::before {
+        content: '·';
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #cbd5e1;
+      }
+
+      .char.space.correct::before {
+        color: #8a2be2;
+      }
+
+      .char.space.incorrect::before {
+        color: #ef4444;
+      }
+
+      .char.space.active::before {
+        color: #8a2be2;
+      }
+    </style>
+
     <div id="devtools-banner">
       ❌ Открытие инструментов разработчика запрещено! ❌
     </div>
 
-    <style>
-      body {
-        font-family: "Roboto Mono", monospace;
-        background-color: #302b35;
-        color: #f5f5f5;
-        display: block;
-        justify-content: center;
-        align-items: center;
+    <div class="typing-game">
+      <header>
+        <div class="level-indicator">
+          <i class="fas fa-star"></i>
+          Продвинутый уровень
+        </div>
+        <h1>Тренажер на скорость печати</h1>
+        <p>Тренируйте печать с текстами повышенной сложности</p>
+      </header>
 
-        margin-left: auto;
-        margin-right: auto;
-      }
-
-    
-      /* Стиль для баннера */
-      #devtools-banner {
-          display: none;
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background-color: rgba(0, 0, 0, 0.9);
-          color: white;
-          font-size: 2em;
-          text-align: center;
-          line-height: 100vh;
-          z-index: 9999;
-      }
-.hidden {
-    display: none;
-  }
-  .highlight {
-    background-color: rgba(33, 128, 33, 0.377);
-  }
-
-
-  .typing-game {
-    display: block;
-    margin-top: 300px;
-    width: 90%;
-    max-width: 900px;
-    background-color: #1e1e1e;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  }
-
-  .correct {
-    color: green;
-  }
-
-  .incorrect {
-    color: red;
-  }
-  #user-input {
-    height: 0px;
-    width: 0px;
-    border: none;
-    overflow: hidden;
-    resize: none;
-    position: fixed;
-    bottom: 0;
-    right: -100px;
-  }
-#text-to-type {
-    font-size: 1.2em;
-    margin-bottom: 20px;
-    padding: 15px;
-    background-color: #333;
-    border-radius: 10px;
-    overflow-wrap: break-word; /* Перенос длинных слов */
-    word-wrap: break-word; /* Поддержка старых браузеров */
-    overflow-y: auto;
-    
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-
-    color: rgb(207, 207, 207);
-}
-
-#home-btn {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    background-color: #6a0dad; /* Фиолетовый фон */
-    color: white;
-    font-size: 16px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    transition: background-color 0.3s, transform 0.2s;
-}
-
-#home-btn:hover {
-    background-color: #5500aa;
-    transform: scale(1.05);
-}
-
-  </style>
-<header class="text-xl sm:text-3xl md:text-5xl bg-violet-700/20  py-3 text-violet-300 mb-4 text-center mx-2 rounded-b-3xl shadow-md shadow-violet-800/30">
-  Тренажёр на скорость печати <span class="bg-yellow-100 text-yellow-800 text-lg font-medium px-2.5 py-0.5 rounded-full dark:bg-orange-800 dark:text-orange-300">Продвинутый</span>
-
-</header>
-<main class=" grid md:flex gap-4 p-4 max-w-7xl mx-auto">
-  <div class="mx-auto md:mx-0"><!-- Блок с контролами -->
-    <div class="controls border-2 border-violet-900 rounded-lg p-3 w-[300px] mb-2">
-<div class="grid grid-cols-2 gap-2">
-        <button id="generate-btn" class=" bg-violet-500 hover:bg-violet-700 text-white font-bold mt-2 py-2 px-4 rounded">Начать</button>
-        <button id="reset-btn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 mt-2 rounded">Сбросить</button></div>
-    </div>
-    <div class="stats border-2 border-violet-900 rounded-lg p-3 w-[300px]">
-    <p>Скорость: <span id="wpm">0</span> символов в минуту</p>
-    <p class="">Точность: <span id="accuracy">100</span>%</p>
-    
-    <button id="start-btn" class="hidden">Начать</button>
-    
-</div></div>
-  <!-- Блок с статистикой -->
-  <div class="mx-auto max-w-4xl">
-  
-
-  <!-- Блок с игровой областью -->
-  <div class="game-area">
-      <div id="text-to-type" class="text-to-type w-full">
-          <p>Здесь будет текст для набора</p>
+      <div class="hint">
+        <i class="fas fa-lightbulb"></i>
+        <span>Совет: Сконцентрируйтесь на точности набора, скорость придет с практикой</span>
       </div>
-      <textarea id="user-input" placeholder="Начните печатать здесь..." class="user-input w-full p-2 mt-2 border-2 rounded-md bg-zinc-800 border-violet-900" disabled></textarea>
-      <div id="warningMessage" class="warning-message mt-2 text-red-500"></div>
-  </div>
 
-</div>
-<button id="home-btn" onclick="window.location.href='/'">На главную</button>
-  
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
+      <div class="controls">
+        <button id="generate-btn">
+          <i class="fas fa-sync-alt"></i>
+          Сгенерировать текст
+        </button>
+        <button id="reset-btn">
+          <i class="fas fa-redo"></i>
+          Сбросить
+        </button>
+        <a href="{{ url_for('about') }}" class="btn">
+          <i class="fas fa-info-circle"></i>
+          О проекте
+        </a>
+      </div>
+      
+      <section class="game-area">
+        <div id="text-to-type">
+          <p>Здесь будет текст для набора...</p>
+        </div>
+        <textarea id="user-input" spellcheck="false"></textarea>
+      </section>
+      
+      <div class="stats">
+        <p>Скорость: <span id="wpm">0</span> CPM</p>
+        <p>Точность: <span id="accuracy">100</span>%</p>
+        <button id="reset-btn">
+          <i class="fas fa-redo"></i>
+          Сбросить
+        </button>
+      </div>
+    </div>
 
-    document.addEventListener("keydown", (event) => {
-    if (event.key === "Backspace" || event.key === "Delete") {
-        event.preventDefault(); // Блокируем удаление
-    }
-});
+    <a href="/" id="home-btn">
+      <i class="fas fa-home"></i>
+      На главную
+    </a>
 
-
-    const textToType = document.getElementById("text-to-type");
-    const userInput = document.getElementById("user-input");
-    const startButton = document.getElementById("start-btn");
-    const resetButton = document.getElementById("reset-btn");
-    const generateButton = document.getElementById("generate-btn");
-    const wpmSpan = document.getElementById("wpm");
-    const accuracySpan = document.getElementById("accuracy");
-    const gameArea = document.getElementById("game-area");
-    const warningMessage = document.getElementById('warningMessage');
-
-    let originalText = "";
-    let timer = null;
-    let startTime = null;
-    let previousInputValue = ""; // Переменная для хранения предыдущего значения
-
-    // Генерация текста
-    function generateText() {
-        return words[Math.floor(Math.random() * words.length)]; // Возвращаем случайное предложение
-    }
-
-    // Начало игры
-    function startGame() {
-        userInput.disabled = false;
-        userInput.value = "";
-        previousInputValue = ""; // Сбрасываем предыдущее значение
-        userInput.focus();
-        startTime = new Date();
-        timer = setInterval(updateStats, 100);
-        originalText = generateText(); // Генерация текста
-        textToType.textContent = originalText; // Устанавливаем текст для набора
-        wpmSpan.textContent = "0";
-        accuracySpan.textContent = "100";
-        updateTextHighlight(); // Обновляем подсветку текста
-    }
-
-    // Обновление статистики
-    function updateStats() {
-        const typedText = userInput.value;
-        const totalTyped = typedText.length;
-
-        const elapsedTime = (new Date() - startTime) / 60000; // в минутах
-        const wpm = Math.round(totalTyped / elapsedTime);
-        wpmSpan.textContent = wpm;
-
-        let correctChars = 0;
-        for (let i = 0; i < totalTyped; i++) {
-            if (typedText[i] === originalText[i]) {
-                correctChars++;
-            }
-        }
-        const accuracy = Math.round((correctChars / totalTyped) * 100) || 0;
-        accuracySpan.textContent = accuracy;
-
-        // Проверка на завершение теста
-        if (typedText.length === originalText.length) {
-            endGame(); // Завершение теста, если длина совпадает
-        }
-    }
-
-    // Завершение игры
-    let isGameEnded = false;
-    function endGame() {
-        if (isGameEnded) return;
-        isGameEnded = true;
-
-        clearInterval(timer);
-        userInput.disabled = true;
-    }
-
-    // Сброс игры
-    resetButton.addEventListener("click", () => {
-        clearInterval(timer);
-        userInput.disabled = true;
-        userInput.value = "";
-        previousInputValue = ""; // Сбрасываем предыдущее значение
-        textToType.textContent = "";
-        wpmSpan.textContent = "0";
-        accuracySpan.textContent = "100";
-        updateTextHighlight(); // Сбрасываем подсветку текста
-    });
-
-    // Генерация нового текста
-    generateButton.addEventListener("click", () => {
-        if (userInput.disabled === false) {
-            userInput.value = ""; // Очищаем поле ввода
-            previousInputValue = ""; // Сбрасываем предыдущее значение
-        }
-        startGame(); // Начинаем новую игру
-    });
-
-    // Фокус на поле ввода при клике на игровую область
-    gameArea.addEventListener("click", () => {
-        userInput.focus();
-    });
-
-    // Завершение игры при потере фокуса
-    userInput.addEventListener("blur", endGame);
-
-    // Обновление подсветки текста
-    function updateTextHighlight() {
-        const inputText = userInput.value;
-        const resultHTML = [];
-
-        for (let i = 0; i < originalText.length; i++) {
-            if (i < inputText.length) {
-                if (inputText[i] === originalText[i]) {
-                    resultHTML.push(`<span class="correct">${originalText[i]}</span>`); // Правильный символ
-                } else {
-                    resultHTML.push(`<span class="incorrect">${originalText[i]}</span>`); // Неправильный символ
-                }
-            } else {
-                resultHTML.push(`<span>${originalText[i]}</span>`); // Еще не введенный символ
-            }
-        }
-
-        textToType.innerHTML = resultHTML.join('');
-    }
-
-    // Обработчик ввода текста
-    userInput.addEventListener("input", (event) => {
-    const currentInputValue = userInput.value;
-
-    // Запрещаем удаление символов
-    if (event.inputType === "deleteContentBackward" || event.inputType === "deleteContentForward") {
-        userInput.value = previousInputValue; // Восстанавливаем предыдущее значение
-        return;
-    }
-
-    // Обновляем предыдущее значение
-    previousInputValue = currentInputValue;
-
-    updateStats();
-    updateTextHighlight(); // Обновляем подсветку при каждом вводе
-});
-
-
-});
-</script>
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
+    <script src="{{ url_for('static', filename='words-advenced.js') }}"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const textToType = document.getElementById("text-to-type");
+        const userInput = document.getElementById("user-input");
+        const generateButton = document.getElementById("generate-btn");
+        const resetButton = document.getElementById("reset-btn");
+        const wpmSpan = document.getElementById("wpm");
+        const accuracySpan = document.getElementById("accuracy");
+
+        let originalText = "";
+        let timer = null;
+        let startTime = null;
+        let previousInputValue = "";
+        let isGameEnded = false;
+
+        function generateText() {
+          return words[Math.floor(Math.random() * words.length)];
+        }
+
+        function startGame() {
+          isGameEnded = false;
+          userInput.disabled = false;
+          userInput.value = "";
+          previousInputValue = "";
+          userInput.focus();
+          startTime = new Date();
+          timer = setInterval(updateStats, 100);
+          originalText = generateText();
+          textToType.innerHTML = originalText.split('').map(char => {
+            if (char === ' ') {
+              return '<span class="char space">&nbsp;</span>';
+            }
+            return `<span class="char">${char}</span>`;
+          }).join('');
+          wpmSpan.textContent = "0";
+          accuracySpan.textContent = "100";
+        }
+
+        function updateStats() {
+          const typedText = userInput.value;
+          const totalTyped = typedText.length;
+
+          const elapsedTime = (new Date() - startTime) / 60000;
+          const wpm = Math.round(totalTyped / elapsedTime);
+          wpmSpan.textContent = wpm;
+
+          let correctChars = 0;
+          const chars = textToType.querySelectorAll('.char');
+          
+          for (let i = 0; i < chars.length; i++) {
+            chars[i].classList.remove('correct', 'incorrect', 'active');
+            if (i < typedText.length) {
+              if (typedText[i] === originalText[i]) {
+                chars[i].classList.add('correct');
+                correctChars++;
+              } else {
+                chars[i].classList.add('incorrect');
+              }
+            } else if (i === typedText.length) {
+              chars[i].classList.add('active');
+            }
+          }
+
+          const accuracy = Math.round((correctChars / totalTyped) * 100) || 0;
+          accuracySpan.textContent = accuracy;
+
+          if (typedText.length === originalText.length) {
+            endGame();
+          }
+        }
+
+        function endGame() {
+          if (isGameEnded) return;
+          isGameEnded = true;
+
+          clearInterval(timer);
+          userInput.disabled = true;
+
+          const finalWpm = parseInt(wpmSpan.textContent);
+          const finalAccuracy = parseInt(accuracySpan.textContent);
+
+          // Кодируем результаты для URL
+          const results = {
+            wpm: finalWpm,
+            accuracy: finalAccuracy,
+            difficulty: 'Продвинутый',
+            dateTime: new Date().toISOString()
+          };
+          const jsonString = JSON.stringify(results);
+          const encodedData = encodeURIComponent(jsonString);
+          
+          // Отправляем данные на сервер
+          fetch('/api/scores', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(results)
+          })
+          .then(response => response.json())
+          .then(data => {
+            console.log('Результаты сохранены:', data);
+          })
+          .catch(error => {
+            console.error('Ошибка при сохранении результатов:', error);
+          })
+          .finally(() => {
+            // Перенаправляем на страницу результатов через небольшую задержку
+            setTimeout(() => {
+              window.location.href = `/results?data=${encodedData}`;
+            }, 1500);
+          });
+        }
+
+        generateButton.addEventListener("click", startGame);
+
+        resetButton.addEventListener("click", () => {
+          clearInterval(timer);
+          userInput.disabled = true;
+          userInput.value = "";
+          previousInputValue = "";
+          textToType.innerHTML = '<p>Здесь будет текст для набора...</p>';
+          wpmSpan.textContent = "0";
+          accuracySpan.textContent = "100";
+        });
+
+        userInput.addEventListener("input", (event) => {
+          const currentInputValue = userInput.value;
+
+          if (event.inputType === "deleteContentBackward" || event.inputType === "deleteContentForward") {
+            userInput.value = previousInputValue;
+            return;
+          }
+
+          previousInputValue = currentInputValue;
+          updateStats();
+        });
+
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Backspace" || event.key === "Delete") {
+            event.preventDefault();
+          }
+        });
+
+        textToType.addEventListener("click", () => {
+          if (!userInput.disabled) {
+            userInput.focus();
+          }
+        });
+      });
+    </script>
   </body>
 </html>
