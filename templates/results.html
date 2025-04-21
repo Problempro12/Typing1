@@ -11,6 +11,22 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <title>Результаты теста на скорость печати</title>
     <style>
+        #devtools-banner {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        background-color: rgba(0, 0, 0, 0.95);
+            color: white;
+            font-size: 2em;
+            text-align: center;
+            line-height: 100vh;
+            z-index: 9999;
+        font-family: 'Montserrat', sans-serif;
+      }
+
       :root {
         --primary-color: #4f46e5;
         --primary-dark: #4338ca;
@@ -219,9 +235,9 @@
       }
 
       .save-form.hidden {
-        display: none;
-      }
-
+      display: none;
+    }
+  
       .save-form h3 {
         font-size: 1.8rem;
         color: var(--text-dark);
@@ -465,7 +481,7 @@
 <body>
     <div id="devtools-banner">
         ❌ Открытие инструментов разработчика запрещено! ❌
-    </div>
+      </div>
     <div class="container">
         <div class="results-card">
             <div class="results-header">
@@ -499,7 +515,7 @@
             <div class="save-form">
                 <h3>Сохранить результат</h3>
                 <div class="input-group">
-                    <input type="text" id="player-name" placeholder="Введите вашу фамилию" maxlength="20">
+                    <input type="text" id="studentName" placeholder="Введите имя студента" maxlength="20">
                     <button class="save-btn" onclick="saveScore()">
                         <i class="fas fa-save"></i> Сохранить
                     </button>
@@ -517,7 +533,7 @@
                         <option value="Легкий">Легкий</option>
                         <option value="Нормальный">Нормальный</option>
                         <option value="Продвинутый">Продвинутый</option>
-                        <option value="Эксперт">Эксперт</option>
+                        <option value="Экспертный">Экспертный</option>
                     </select>
                 </div>
                 <div class="filter-group">
@@ -556,14 +572,14 @@
         </div>
     </div>
 
-    <script>
+<script>
         document.addEventListener("DOMContentLoaded", function() {
             const urlParams = new URLSearchParams(window.location.search);
             const encodedData = urlParams.get('data');
-            
+
             if (encodedData) {
                 const decodedData = decodeResults(encodedData);
-                
+
                 document.getElementById('final-wpm').textContent = decodedData.wpm;
                 document.getElementById('final-accuracy').textContent = decodedData.accuracy;
                 document.getElementById('difficulty-level').textContent = decodedData.difficulty;
@@ -615,50 +631,45 @@
             }
         }
 
-        function saveScore() {
-            const playerName = document.getElementById('player-name').value.trim();
-            if (!playerName) {
-                alert('Пожалуйста, введите вашу фамилию');
+        async function saveScore() {
+            const studentName = document.getElementById('studentName').value.trim();
+            if (!studentName) {
+                alert('Пожалуйста, введите имя студента');
                 return;
             }
 
-            const urlParams = new URLSearchParams(window.location.search);
-            const encodedData = urlParams.get('data');
-            
-            if (encodedData) {
-                const decodedData = decodeResults(encodedData);
-                
-                // Проверяем, не был ли уже сохранен этот результат
-                if (decodedData.saved) {
-                    alert('Этот результат уже был сохранен!');
-                    document.querySelector('.save-form').classList.add('hidden');
-                    return;
-                }
+            const score = {
+                wpm: parseFloat(document.getElementById('final-wpm').textContent),
+                accuracy: parseFloat(document.getElementById('final-accuracy').textContent),
+                difficulty: document.getElementById('difficulty-level').textContent,
+                dateTime: document.getElementById('final-time').textContent,
+                studentName: studentName
+            };
 
-                decodedData.studentName = playerName;
-                decodedData.saved = true;
-                
-                fetch('/api/scores', {
+            try {
+                const response = await fetch('/api/save-score', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(decodedData)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Результат успешно сохранен!');
-                        document.querySelector('.save-form').classList.add('hidden');
-                        displayHighScores();
-                    } else {
-                        alert('Ошибка при сохранении результата');
-                    }
-                })
-                .catch(error => {
-                    console.error('Ошибка:', error);
-                    alert('Ошибка при сохранении результата');
+                    body: JSON.stringify(score)
                 });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Результат успешно сохранен');
+                    window.location.href = '/';
+                } else {
+                    if (response.status === 401) {
+                        window.location.href = '/login';
+                    } else {
+                        alert(data.message || 'Ошибка при сохранении результата');
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка при сохранении результата:', error);
+                alert('Произошла ошибка при сохранении результата');
             }
         }
 
@@ -686,14 +697,14 @@
 
         function getDifficultyClass(difficulty) {
             switch (difficulty) {
-                case 'Эксперт':
-                    return 'bg-red-100 text-red-800';
+                case 'Экспертный':
+                    return 'bg-[rgba(239,68,68,0.1)] text-[#ef4444]';
                 case 'Продвинутый':
-                    return 'bg-purple-100 text-purple-800';
-                case 'Обычный':
-                    return 'bg-yellow-100 text-yellow-800';
-                case 'Легкий':
-                    return 'bg-green-100 text-green-800';
+                    return 'bg-[rgba(138,43,226,0.1)] text-[#8a2be2]';
+                case 'Нормальный':
+                    return 'bg-[rgba(99,102,241,0.1)] text-[#6366f1]';
+                case 'Начальный':
+                    return 'bg-[rgba(16,185,129,0.1)] text-[#10b981]';
                 default:
                     return 'bg-gray-100 text-gray-800';
             }
@@ -738,16 +749,16 @@
             
             tableBody.innerHTML = filteredScores.map((score, index) => {
                 let medalClass = '';
-                if (index === 0) medalClass = 'bg-yellow-100';
-                else if (index === 1) medalClass = 'bg-gray-100';
-                else if (index === 2) medalClass = 'bg-orange-100';
+                if (index === 0) medalClass = 'bg-[rgba(255,223,0,0.1)]';
+                else if (index === 1) medalClass = 'bg-[rgba(192,192,192,0.1)]';
+                else if (index === 2) medalClass = 'bg-[rgba(205,127,50,0.1)]';
                 
                 return `
                     <tr class="${medalClass}">
                         <td>
-                            ${index === 0 ? '<i class="fas fa-medal" style="color: gold;"></i>' : 
-                              index === 1 ? '<i class="fas fa-medal" style="color: silver;"></i>' : 
-                              index === 2 ? '<i class="fas fa-medal" style="color: #cd7f32;"></i>' : 
+                            ${index === 0 ? '<i class="fas fa-medal" style="color: #FFD700;"></i>' : 
+                              index === 1 ? '<i class="fas fa-medal" style="color: #C0C0C0;"></i>' : 
+                              index === 2 ? '<i class="fas fa-medal" style="color: #CD7F32;"></i>' : 
                               index + 1}
                         </td>
                         <td>${score.studentName || 'Аноним'}</td>
@@ -783,6 +794,18 @@
         // Добавляем обработчики событий для фильтров после загрузки DOM
         document.getElementById('difficulty-filter').addEventListener('change', displayFilteredScores);
         document.getElementById('sort-by').addEventListener('change', displayFilteredScores);
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'F12' || (event.ctrlKey && event.shiftKey && event.key === 'I')) {
+                event.preventDefault();
+                document.getElementById('devtools-banner').style.display = 'block';
+            }
+        });
+
+        document.ondragstart = noselect;
+        document.onselectstart = noselect;
+        document.oncontextmenu = noselect;
+        function noselect() {return false;}
     </script>
 </body>
 </html>

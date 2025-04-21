@@ -4,19 +4,24 @@ import os
 import jwt
 from datetime import datetime, timedelta
 from functools import wraps
+import uuid
+from dotenv import load_dotenv
+
+# Загружаем переменные окружения
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = 'your-secret-key'  # В продакшене использовать безопасный ключ
+app.secret_key = os.getenv('SECRET_KEY')
 
 # Конфигурация JWT
-JWT_SECRET = 'your-jwt-secret'  # В продакшене использовать безопасный ключ
+JWT_SECRET = os.getenv('JWT_SECRET')
 JWT_ALGORITHM = 'HS256'
 JWT_EXPIRATION = 24 * 60 * 60  # 24 часа в секундах
 
-# Учетные данные учителя (в реальном приложении должны храниться в базе данных)
+# Учетные данные учителя из .env
 TEACHER_CREDENTIALS = {
-    'username': 'teacher',
-    'password': 'password123'
+    'username': os.getenv('TEACHER_USERNAME'),
+    'password': os.getenv('TEACHER_PASSWORD')
 }
 
 SCORES_FILE = 'scores.json'
@@ -56,12 +61,8 @@ def load_scores():
         return []
 
 def save_scores(scores):
-    try:
-        with open(SCORES_FILE, 'w', encoding='utf-8') as f:
-            json.dump(scores, f, ensure_ascii=False, indent=2)
-    except Exception as e:
-        print(f"Ошибка сохранения результатов: {e}")
-        raise
+    with open('scores.json', 'w', encoding='utf-8') as f:
+        json.dump(scores, f, ensure_ascii=False, indent=2)
 
 @app.route('/')
 def home():
@@ -183,6 +184,32 @@ def clear_scores():
     except:
         return jsonify({'success': False, 'message': 'Ошибка авторизации'}), 401
 
+@app.route('/api/delete-score/<score_id>', methods=['DELETE'])
+def delete_score(score_id):
+    token = request.cookies.get('token')
+    if not token:
+        return jsonify({'success': False, 'message': 'Не авторизован'}), 401
+    
+    try:
+        jwt.decode(token, app.secret_key, algorithms=['HS256'])
+        scores = load_scores()
+        
+        # Разбираем score_id на составные части
+        try:
+            student_name, date_time = score_id.split('|')
+            # Фильтруем результаты, исключая удаляемый
+            scores = [score for score in scores if not (
+                score.get('studentName') == student_name and 
+                score.get('dateTime') == date_time
+            )]
+            save_scores(scores)
+            return jsonify({'success': True, 'message': 'Результат успешно удален'})
+        except ValueError:
+            return jsonify({'success': False, 'message': 'Неверный формат идентификатора'}), 400
+            
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Ошибка при удалении: {str(e)}'}), 500
+
 @app.route('/leaderboard')
 def leaderboard():
     return render_template('leaderboard.html')
@@ -215,6 +242,23 @@ def expert():
 @app.route('/about')
 def about():
      return render_template('about.html')
+
+@app.route('/api/save-score', methods=['POST'])
+def save_score():
+    try:
+        data = request.get_json()
+        scores = load_scores()
+        
+        # Добавляем уникальный идентификатор
+        data['id'] = str(uuid.uuid4())
+        data['saved'] = True
+        
+        scores.append(data)
+        save_scores(scores)
+        
+        return jsonify({'success': True, 'message': 'Результат успешно сохранен'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Ошибка при сохранении: {str(e)}'}), 500
 
 # Добавляем обработку CORS
 @app.after_request

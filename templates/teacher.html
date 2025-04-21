@@ -466,23 +466,27 @@
         }
 
         .difficulty-easy {
-            background-color: #c6f6d5;
-            color: #22543d;
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
         }
 
         .difficulty-normal {
-            background-color: #fefcbf;
-            color: #744210;
+            background: rgba(99, 102, 241, 0.1);
+            color: #6366f1;
+            border: 1px solid rgba(99, 102, 241, 0.2);
         }
 
         .difficulty-advanced {
-            background-color: #fed7d7;
-            color: #822727;
+            background: rgba(138, 43, 226, 0.1);
+            color: #8a2be2;
+            border: 1px solid rgba(138, 43, 226, 0.2);
         }
 
         .difficulty-expert {
-            background-color: #e9d8fd;
-            color: #44337a;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
         }
 
         .empty-message {
@@ -584,26 +588,22 @@
 
         /* Кнопка удаления в таблице */
         .delete-btn {
-            padding: 0.4rem;
             background: none;
             border: none;
-            color: var(--danger);
+            color: #ef4444;
             cursor: pointer;
-            border-radius: var(--radius-sm);
             transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
         }
 
         .delete-btn:hover {
-            background-color: #fee2e2;
+            background: rgba(239, 68, 68, 0.1);
             color: #dc2626;
         }
 
-        .delete-btn svg {
-            width: 18px;
-            height: 18px;
+        .delete-btn i {
+            font-size: 1.25rem;
         }
     </style>
 </head>
@@ -744,10 +744,10 @@
                         <label for="difficultyFilter" class="filter-label">Уровень сложности</label>
                         <select id="difficultyFilter" class="filter-select">
                             <option value="all">Все уровни</option>
-                            <option value="Легкий">Легкий</option>
+                            <option value="Начальный">Начальный</option>
                             <option value="Нормальный">Нормальный</option>
                             <option value="Продвинутый">Продвинутый</option>
-                            <option value="Эксперт">Эксперт</option>
+                            <option value="Экспертный">Экспертный</option>
                         </select>
                     </div>
                     <div class="filter-group">
@@ -946,27 +946,35 @@
             try {
                 const response = await fetch(`/api/delete-score/${scoreId}`, {
                     method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     credentials: 'include'
                 });
-                
+
                 const data = await response.json();
-                
-                if (response.status === 401) {
-                    window.location.href = '/login';
-                    return;
-                }
-                
-                if (data.success) {
-                    // Удаляем результат из текущего массива
-                    currentScores = currentScores.filter(score => score.id !== scoreId);
+
+                if (response.ok) {
+                    // Обновляем текущие результаты
+                    const [studentName, dateTime] = scoreId.split('|');
+                    currentScores = currentScores.filter(score => 
+                        !(score.studentName === studentName && score.dateTime === dateTime)
+                    );
+                    // Показываем отфильтрованные результаты
                     displayFilteredScores();
+                    // Обновляем статистику
                     updateStats();
+                    alert('Результат успешно удален');
                 } else {
-                    alert(data.message || 'Ошибка при удалении результата');
+                    if (response.status === 401) {
+                        window.location.href = '/login';
+                    } else {
+                        alert(data.message || 'Ошибка при удалении результата');
+                    }
                 }
             } catch (error) {
-                console.error('Ошибка:', error);
-                alert('Ошибка при удалении результата');
+                console.error('Ошибка при удалении результата:', error);
+                alert('Произошла ошибка при удалении результата');
             }
         }
 
@@ -997,10 +1005,10 @@
                         break;
                     case 'difficulty':
                         const difficultyWeight = {
-                            'Эксперт': 4,
+                            'Экспертный': 4,
                             'Продвинутый': 3,
                             'Нормальный': 2,
-                            'Легкий': 1
+                            'Начальный': 1
                         };
                         comparison = difficultyWeight[b.difficulty] - difficultyWeight[a.difficulty];
                         break;
@@ -1034,7 +1042,7 @@
                 // Определяем класс для бейджа сложности
                 let difficultyClass = '';
                 switch (score.difficulty) {
-                    case 'Легкий':
+                    case 'Начальный':
                         difficultyClass = 'difficulty-easy';
                         break;
                     case 'Нормальный':
@@ -1043,10 +1051,13 @@
                     case 'Продвинутый':
                         difficultyClass = 'difficulty-advanced';
                         break;
-                    case 'Эксперт':
+                    case 'Экспертный':
                         difficultyClass = 'difficulty-expert';
                         break;
                 }
+                
+                // Создаем составной идентификатор для удаления
+                const deleteId = `${score.studentName}|${score.dateTime}`;
                 
                 row.innerHTML = `
                     <td class="student-name">${score.studentName || 'Аноним'}</td>
@@ -1055,10 +1066,8 @@
                     <td><span class="difficulty-badge ${difficultyClass}">${score.difficulty}</span></td>
                     <td>${formatDateTime(score.dateTime)}</td>
                     <td>
-                        <button class="delete-btn" onclick="deleteScore('${score.id}')" title="Удалить результат">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
+                        <button class="delete-btn" onclick="deleteScore('${deleteId}')" title="Удалить результат">
+                            <i class="fas fa-trash"></i>
                         </button>
                     </td>
                 `;
@@ -1104,6 +1113,21 @@
                 clearInterval(autoRefreshInterval);
             }
         });
+
+        function getDifficultyClass(difficulty) {
+            switch (difficulty) {
+                case "Начальный":
+                    return "easy";
+                case "Нормальный":
+                    return "normal";
+                case "Продвинутый":
+                    return "advanced";
+                case "Экспертный":
+                    return "expert";
+                default:
+                    return "";
+            }
+        }
     </script>
 </body>
 </html> 

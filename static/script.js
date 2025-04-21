@@ -12,6 +12,7 @@ const wpmSpan = document.getElementById('wpm');
   let currentText = '';
   let startTime = null;
   let timer = null;
+  let previousInputValue = '';
 
   // Генерация текста заданной длины
   function generateText(length) {
@@ -175,7 +176,23 @@ const wpmSpan = document.getElementById('wpm');
     }
   });
 
-  userInput.addEventListener('input', updateStats);
+  userInput.addEventListener('input', (event) => {
+    const currentInputValue = userInput.value;
+
+    if (event.inputType === "deleteContentBackward" || event.inputType === "deleteContentForward") {
+      userInput.value = previousInputValue;
+      return;
+    }
+
+    // Запускаем таймер при первом вводе символа
+    if (!startTime && currentInputValue.length === 1) {
+      startTime = new Date();
+      timer = setInterval(updateStats, 100);
+    }
+
+    previousInputValue = currentInputValue;
+    updateStats();
+});
 
   textToType.addEventListener('click', () => {
     userInput.focus();
@@ -197,14 +214,12 @@ const wpmSpan = document.getElementById('wpm');
 });
 
 // Защита от инструментов разработчика
-/*
 document.addEventListener('keydown', function (event) {
   if (event.key === 'F12' || (event.ctrlKey && event.shiftKey && event.key === 'I')) {
     event.preventDefault();
     document.getElementById('devtools-banner').style.display = 'block';
   }
 });
-*/
 
 // Запрет выделения текста
 document.ondragstart = noselect;
