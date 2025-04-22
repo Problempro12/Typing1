@@ -679,7 +679,8 @@
             fetch('/api/scores')
                 .then(response => response.json())
                 .then(scores => {
-                    currentScores = scores;
+                    // Фильтруем только сохраненные результаты
+                    currentScores = scores.filter(score => score.saved === true);
                     displayFilteredScores();
                 })
                 .catch(error => {
